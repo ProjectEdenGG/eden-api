@@ -50,7 +50,6 @@ public abstract class MongoDBPersistence {
 		morphia.getMapper().getConverters().addConverter(new LocalDateConverter(morphia.getMapper()));
 		morphia.getMapper().getConverters().addConverter(new LocalDateTimeConverter(morphia.getMapper()));
 		morphia.getMapper().getConverters().addConverter(new UUIDConverter(morphia.getMapper()));
-		databases.put(dbType, datastore);
 		return datastore;
 	}
 
@@ -59,6 +58,7 @@ public abstract class MongoDBPersistence {
 			return databases.computeIfAbsent(db, $ -> openConnection(db, config));
 		} catch (Exception ex) {
 			Log.severe("Could not establish connection to the MongoDB \"" + db.getDatabase() + "\" database: " + ex.getMessage());
+			ex.printStackTrace();
 			return null;
 		}
 	}

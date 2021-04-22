@@ -69,7 +69,8 @@ public abstract class MongoService<T extends PlayerOwnedObject> {
 	}
 
 	static {
-		database = MongoDBPersistence.getConnection(MongoDBDatabase.BEARNATION, EdenAPI.get().getDatabaseConfig("mongodb"));
+		DatabaseConfig config = EdenAPI.api().getDatabaseConfig(DatabaseType.MONGO);
+		database = MongoDBPersistence.getConnection(MongoDBDatabase.BEARNATION, config);
 		if (database != null)
 			database.ensureIndexes();
 	}

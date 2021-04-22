@@ -1,16 +1,21 @@
 package me.pugabyte.edenapi.persistence;
 
-import lombok.Getter;
+import lombok.Builder;
+import lombok.Data;
 
-@Getter
+@Data
+@Builder
 public class DatabaseConfig {
-	private String host;
-	private int port;
-	private String username;
-	private String password;
+	private DatabaseType type;
+	@Builder.Default
+	private String host = "localhost";
+	@Builder.Default
+	private int port = 27017;
+	@Builder.Default
+	private String username = "root";
+	@Builder.Default
+	private String password = "password";
 	private String prefix;
 	private String modelPath;
-
-	public DatabaseConfig(String type) {}
 
 }

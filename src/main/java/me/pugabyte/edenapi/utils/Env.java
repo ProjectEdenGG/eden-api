@@ -9,6 +9,6 @@ public enum Env {
 	PROD;
 
 	public static boolean applies(Env... envs) {
-		return Arrays.asList(envs).contains(EdenAPI.get().getEnv());
+		return Arrays.asList(envs).contains(EdenAPI.api().getEnv());
 	}
 }
