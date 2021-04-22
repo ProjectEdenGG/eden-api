@@ -1,4 +1,4 @@
-package me.pugabyte.edenapi.persistence;
+package me.pugabyte.edenapi.mongodb;
 
 import lombok.Builder;
 import lombok.Data;
@@ -6,7 +6,6 @@ import lombok.Data;
 @Data
 @Builder
 public class DatabaseConfig {
-	private DatabaseType type;
 	@Builder.Default
 	private String host = "localhost";
 	@Builder.Default

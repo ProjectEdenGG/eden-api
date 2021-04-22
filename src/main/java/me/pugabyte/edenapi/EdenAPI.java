@@ -1,9 +1,8 @@
 package me.pugabyte.edenapi;
 
-import me.pugabyte.edenapi.persistence.DatabaseConfig;
-import me.pugabyte.edenapi.persistence.DatabaseType;
+import me.pugabyte.edenapi.mongodb.DatabaseConfig;
+import me.pugabyte.edenapi.mongodb.MongoDBPersistence;
 import me.pugabyte.edenapi.utils.Env;
-import org.apache.commons.lang3.NotImplementedException;
 
 public abstract class EdenAPI {
 	protected static EdenAPI instance;
@@ -14,6 +13,10 @@ public abstract class EdenAPI {
 
 	abstract public Env getEnv();
 
-	abstract public DatabaseConfig getDatabaseConfig(DatabaseType type);
+	abstract public DatabaseConfig getDatabaseConfig();
+
+	public void shutdown() {
+		MongoDBPersistence.shutdown();
+	}
 
 }

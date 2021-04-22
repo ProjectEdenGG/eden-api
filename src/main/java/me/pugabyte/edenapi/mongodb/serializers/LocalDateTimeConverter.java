@@ -1,4 +1,4 @@
-package me.pugabyte.edenapi.persistence.serializer.mongodb;
+package me.pugabyte.edenapi.mongodb.serializers;
 
 import dev.morphia.converters.SimpleValueConverter;
 import dev.morphia.converters.TypeConverter;

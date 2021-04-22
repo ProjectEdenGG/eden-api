@@ -1,4 +1,4 @@
-package me.pugabyte.edenapi.persistence.annotations;
+package me.pugabyte.edenapi.mongodb.annotations;
 
 import me.pugabyte.edenapi.models.PlayerOwnedObject;
 

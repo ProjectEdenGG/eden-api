@@ -11,8 +11,8 @@ import lombok.Data;
 import lombok.NonNull;
 import lombok.ToString;
 import me.pugabyte.edenapi.models.PlayerOwnedObject;
-import me.pugabyte.edenapi.persistence.MongoService;
-import me.pugabyte.edenapi.persistence.annotations.PlayerClass;
+import me.pugabyte.edenapi.mongodb.MongoService;
+import me.pugabyte.edenapi.mongodb.annotations.PlayerClass;
 import me.pugabyte.edenapi.exceptions.EdenException;
 import me.pugabyte.edenapi.utils.Utils;
 import org.bson.Document;
@@ -21,7 +21,6 @@ import org.jetbrains.annotations.NotNull;
 
 import java.time.LocalDate;
 import java.time.YearMonth;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;

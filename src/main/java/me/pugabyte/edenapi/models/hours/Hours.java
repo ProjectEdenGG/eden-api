@@ -9,8 +9,8 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 import me.pugabyte.edenapi.models.PlayerOwnedObject;
-import me.pugabyte.edenapi.persistence.serializer.mongodb.LocalDateConverter;
-import me.pugabyte.edenapi.persistence.serializer.mongodb.UUIDConverter;
+import me.pugabyte.edenapi.mongodb.serializers.LocalDateConverter;
+import me.pugabyte.edenapi.mongodb.serializers.UUIDConverter;
 import org.jetbrains.annotations.NotNull;
 
 import java.time.LocalDate;

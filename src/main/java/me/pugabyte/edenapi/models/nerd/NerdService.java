@@ -2,8 +2,8 @@ package me.pugabyte.edenapi.models.nerd;
 
 import dev.morphia.query.Query;
 import me.pugabyte.edenapi.models.hours.HoursService;
-import me.pugabyte.edenapi.persistence.MongoService;
-import me.pugabyte.edenapi.persistence.annotations.PlayerClass;
+import me.pugabyte.edenapi.mongodb.MongoService;
+import me.pugabyte.edenapi.mongodb.annotations.PlayerClass;
 import me.pugabyte.edenapi.exceptions.EdenException;
 import me.pugabyte.edenapi.utils.Utils;
 

@@ -1,4 +1,4 @@
-package me.pugabyte.edenapi.persistence;
+package me.pugabyte.edenapi.mongodb;
 
 import dev.morphia.Datastore;
 import dev.morphia.query.Sort;
@@ -8,7 +8,7 @@ import me.pugabyte.edenapi.EdenAPI;
 import me.pugabyte.edenapi.exceptions.EdenException;
 import me.pugabyte.edenapi.models.PlayerOwnedObject;
 import me.pugabyte.edenapi.models.nerd.Nerd;
-import me.pugabyte.edenapi.persistence.annotations.PlayerClass;
+import me.pugabyte.edenapi.mongodb.annotations.PlayerClass;
 import me.pugabyte.edenapi.utils.Log;
 import me.pugabyte.edenapi.utils.StringUtils;
 import org.apache.commons.lang3.Validate;
@@ -69,10 +69,7 @@ public abstract class MongoService<T extends PlayerOwnedObject> {
 	}
 
 	static {
-		DatabaseConfig config = EdenAPI.api().getDatabaseConfig(DatabaseType.MONGO);
-		database = MongoDBPersistence.getConnection(MongoDBDatabase.BEARNATION, config);
-		if (database != null)
-			database.ensureIndexes();
+		database = MongoDBPersistence.getConnection(EdenAPI.api().getDatabaseConfig());
 	}
 
 	public abstract Map<UUID, T> getCache();
@@ -158,12 +155,16 @@ public abstract class MongoService<T extends PlayerOwnedObject> {
 		Validate.notNull(getPlayerClass(), "You must provide a player owned class or override get(UUID)");
 		if (getCache().containsKey(uuid) && getCache().get(uuid) == null)
 			getCache().remove(uuid);
-		getCache().computeIfAbsent(uuid, $ -> getNoCache(uuid));
-		return getCache().get(uuid);
+		return getCache().computeIfAbsent(uuid, $ -> getNoCache(uuid));
 	}
 
 	protected T getNoCache(UUID uuid) {
+		System.out.println(getPlayerClass().getSimpleName());
+		System.out.println(_id);
+		System.out.println(uuid);
+		System.out.println(database.getDatabase().getName());
 		T object = database.createQuery(getPlayerClass()).field(_id).equal(uuid).first();
+		System.out.println("Object: " + null);
 		if (object == null)
 			object = createPlayerObject(uuid);
 		if (object == null)

@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import me.pugabyte.edenapi.models.PlayerOwnedObject;
-import me.pugabyte.edenapi.persistence.serializer.mongodb.UUIDConverter;
+import me.pugabyte.edenapi.mongodb.serializers.UUIDConverter;
 import me.pugabyte.edenapi.utils.StringUtils;
 import org.jetbrains.annotations.NotNull;
 

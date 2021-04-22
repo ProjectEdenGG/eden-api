@@ -1,28 +1,28 @@
-package me.pugabyte.edenapi.persistence.serializer.mongodb;
+package me.pugabyte.edenapi.mongodb.serializers;
 
 import dev.morphia.converters.SimpleValueConverter;
 import dev.morphia.converters.TypeConverter;
 import dev.morphia.mapping.MappedField;
 import dev.morphia.mapping.Mapper;
 
-import java.math.BigDecimal;
+import java.util.UUID;
 
-public class BigDecimalConverter extends TypeConverter implements SimpleValueConverter {
+public class UUIDConverter extends TypeConverter implements SimpleValueConverter {
 
-	public BigDecimalConverter(Mapper mapper) {
-		super(BigDecimal.class);
+	public UUIDConverter(Mapper mapper) {
+		super(UUID.class);
 	}
 
 	@Override
 	public Object encode(Object value, MappedField optionalExtraInfo) {
 		if (value == null) return null;
-		return ((BigDecimal) value).doubleValue();
+		return value.toString();
 	}
 
 	@Override
 	public Object decode(Class<?> aClass, Object value, MappedField mappedField) {
 		if (value == null) return null;
-		return BigDecimal.valueOf((Double) value);
+		return UUID.fromString((String) value);
 	}
 
 }

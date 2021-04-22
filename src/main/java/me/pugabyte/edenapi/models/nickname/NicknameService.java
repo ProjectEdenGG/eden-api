@@ -1,7 +1,7 @@
 package me.pugabyte.edenapi.models.nickname;
 
-import me.pugabyte.edenapi.persistence.MongoService;
-import me.pugabyte.edenapi.persistence.annotations.PlayerClass;
+import me.pugabyte.edenapi.mongodb.MongoService;
+import me.pugabyte.edenapi.mongodb.annotations.PlayerClass;
 
 import java.util.HashMap;
 import java.util.Map;
