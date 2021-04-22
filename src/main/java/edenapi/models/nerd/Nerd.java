@@ -7,11 +7,13 @@ import edenapi.models.PlayerOwnedObject;
 import edenapi.mongodb.serializers.LocalDateConverter;
 import edenapi.mongodb.serializers.LocalDateTimeConverter;
 import edenapi.mongodb.serializers.UUIDConverter;
+import edenapi.utils.StringUtils;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.jetbrains.annotations.NotNull;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -52,6 +54,12 @@ public class Nerd extends PlayerOwnedObject {
 
 	public static Nerd of(UUID uuid) {
 		return new NerdService().get(uuid);
+	}
+
+	public @NotNull String getName() {
+		if (StringUtils.isUUID0(uuid))
+			return "Console";
+		return name;
 	}
 
 }
