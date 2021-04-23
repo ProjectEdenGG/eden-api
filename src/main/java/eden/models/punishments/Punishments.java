@@ -3,7 +3,7 @@ package eden.models.punishments;
 import dev.morphia.annotations.Converters;
 import dev.morphia.annotations.Entity;
 import dev.morphia.annotations.Id;
-import eden.models.PlayerOwnedObject;
+import eden.interfaces.PlayerOwnedObject;
 import eden.mongodb.serializers.UUIDConverter;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -32,12 +32,12 @@ import static java.util.stream.Collectors.toList;
 @AllArgsConstructor
 @RequiredArgsConstructor
 @Converters(UUIDConverter.class)
-public class Punishments extends PlayerOwnedObject {
+public class Punishments implements PlayerOwnedObject {
 	@Id
 	@NonNull
-	private UUID uuid;
-	private List<Punishment> punishments = new ArrayList<>();
-	private List<IPHistoryEntry> ipHistory = new ArrayList<>();
+	protected UUID uuid;
+	protected List<Punishment> punishments = new ArrayList<>();
+	protected List<IPHistoryEntry> ipHistory = new ArrayList<>();
 
 	public static Punishments of(String name) {
 		return new PunishmentsService().get(name);
@@ -60,31 +60,31 @@ public class Punishments extends PlayerOwnedObject {
 	}
 
 	// TODO Other player IP Ban check - service query IP history
-	public Optional<Punishment> getAnyActiveBan() {
+	public Optional<? extends Punishment> getAnyActiveBan() {
 		return getMostRecentActive(PunishmentType.BAN, PunishmentType.ALT_BAN);
 	}
 
-	public Optional<Punishment> getActiveBan() {
+	public Optional<? extends Punishment> getActiveBan() {
 		return getMostRecentActive(PunishmentType.BAN);
 	}
 
-	public Optional<Punishment> getActiveAltBan() {
+	public Optional<? extends Punishment> getActiveAltBan() {
 		return getMostRecentActive(PunishmentType.ALT_BAN);
 	}
 
-	public Optional<Punishment> getActiveMute() {
+	public Optional<? extends Punishment> getActiveMute() {
 		return getMostRecentActive(PunishmentType.MUTE);
 	}
 
-	public Optional<Punishment> getActiveFreeze() {
+	public Optional<? extends Punishment> getActiveFreeze() {
 		return getMostRecentActive(PunishmentType.FREEZE);
 	}
 
-	public Optional<Punishment> getActiveWatchlist() {
+	public Optional<? extends Punishment> getActiveWatchlist() {
 		return getMostRecentActive(PunishmentType.WATCHLIST);
 	}
 
-	public Optional<Punishment> getLastWarn() {
+	public Optional<? extends Punishment> getLastWarn() {
 		return getMostRecentActive(PunishmentType.WARN);
 	}
 
@@ -94,16 +94,16 @@ public class Punishments extends PlayerOwnedObject {
 				.collect(toList());
 	}
 
-	public Optional<Punishment> getMostRecentActive(PunishmentType... types) {
+	public Optional<? extends Punishment> getMostRecentActive(PunishmentType... types) {
 		return getMostRecent(getActive(types));
 	}
 
-	public Optional<Punishment> getMostRecent() {
+	public Optional<? extends Punishment> getMostRecent() {
 		return getMostRecent(punishments);
 	}
 
-	public Optional<Punishment> getCooldown(UUID punisher) {
-		Optional<Punishment> mostRecent = getMostRecent();
+	public Optional<? extends Punishment> getCooldown(UUID punisher) {
+		Optional<? extends Punishment> mostRecent = getMostRecent();
 		if (!mostRecent.isPresent())
 			return Optional.empty();
 
@@ -116,7 +116,7 @@ public class Punishments extends PlayerOwnedObject {
 		return mostRecent;
 	}
 
-	public Optional<Punishment> getMostRecent(List<Punishment> punishments) {
+	public Optional<? extends Punishment> getMostRecent(List<Punishment> punishments) {
 		return punishments.stream().max(Comparator.comparing(Punishment::getTimestamp));
 	}
 

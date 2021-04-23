@@ -3,7 +3,7 @@ package eden.models.hours;
 import dev.morphia.annotations.Converters;
 import dev.morphia.annotations.Entity;
 import dev.morphia.annotations.Id;
-import eden.models.PlayerOwnedObject;
+import eden.interfaces.PlayerOwnedObject;
 import eden.mongodb.serializers.LocalDateConverter;
 import eden.mongodb.serializers.UUIDConverter;
 import lombok.Data;
@@ -28,14 +28,23 @@ import java.util.concurrent.atomic.AtomicInteger;
 @NoArgsConstructor
 @RequiredArgsConstructor
 @Converters({UUIDConverter.class, LocalDateConverter.class})
-public class Hours extends PlayerOwnedObject {
+public class Hours implements PlayerOwnedObject {
 	@Id
 	@NonNull
-	private UUID uuid;
-	private Map<LocalDate, Integer> times = new HashMap<>();
+	protected UUID uuid;
+	protected Map<LocalDate, Integer> times = new HashMap<>();
+
+	public void increment() {
+		increment(1);
+	}
+
+	public void increment(int amount) {
+		times.put(LocalDate.now(), times.getOrDefault(LocalDate.now(), 0) + amount);
+	}
 
 	/**
 	 * Gets the player's total playtime on the server
+	 *
 	 * @return time as seconds
 	 */
 	@ToString.Include

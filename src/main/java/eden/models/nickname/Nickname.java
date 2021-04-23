@@ -3,41 +3,41 @@ package eden.models.nickname;
 import dev.morphia.annotations.Converters;
 import dev.morphia.annotations.Entity;
 import dev.morphia.annotations.Id;
-import eden.models.PlayerOwnedObject;
+import eden.interfaces.PlayerOwnedObject;
 import eden.mongodb.serializers.UUIDConverter;
 import eden.utils.StringUtils;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.jetbrains.annotations.NotNull;
 
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.UUID;
 
 import static com.google.common.base.Strings.isNullOrEmpty;
 
-@Data
+@Getter
 @Builder
 @Entity(value = "nickname", noClassnameStored = true)
 @NoArgsConstructor
 @AllArgsConstructor
 @RequiredArgsConstructor
 @Converters(UUIDConverter.class)
-public class Nickname extends PlayerOwnedObject {
+public class Nickname implements PlayerOwnedObject {
 	@Id
 	@NonNull
-	private UUID uuid;
+	protected UUID uuid;
 
-	private String nickname;
-	private List<NicknameHistoryEntry> nicknameHistory = new ArrayList<>();
+	protected String nickname;
+
+	public static String of(String name) {
+		return new NicknameService().get(name).getNickname();
+	}
 
 	public static String of(PlayerOwnedObject player) {
-		return of(player.getUuid());
+		return new NicknameService().get(player).getNickname();
 	}
 
 	public static String of(UUID uuid) {
@@ -58,23 +58,6 @@ public class Nickname extends PlayerOwnedObject {
 
 	public boolean hasNickname() {
 		return !isNullOrEmpty(nickname);
-	}
-
-	@Data
-	@NoArgsConstructor
-	@AllArgsConstructor
-	public static class NicknameHistoryEntry extends PlayerOwnedObject{
-		private UUID uuid;
-		private String nickname;
-		private LocalDateTime requestedTimestamp;
-		private String nicknameQueueId;
-		private LocalDateTime responseTimestamp;
-		private boolean pending = true;
-		private boolean accepted;
-		private boolean cancelled;
-		private boolean seenResult;
-		private String response;
-
 	}
 
 }

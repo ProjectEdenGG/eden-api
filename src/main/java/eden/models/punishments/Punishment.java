@@ -1,7 +1,7 @@
 package eden.models.punishments;
 
 import dev.morphia.annotations.Converters;
-import eden.models.PlayerOwnedObject;
+import eden.interfaces.PlayerOwnedObject;
 import eden.mongodb.serializers.UUIDConverter;
 import eden.utils.TimeUtils.Timespan;
 import lombok.AllArgsConstructor;
@@ -17,24 +17,24 @@ import static com.google.common.base.Strings.isNullOrEmpty;
 @NoArgsConstructor
 @AllArgsConstructor
 @Converters(UUIDConverter.class)
-public class Punishment extends PlayerOwnedObject {
-	private UUID id;
-	private UUID uuid;
-	private UUID punisher;
+public class Punishment implements PlayerOwnedObject {
+	protected UUID id;
+	protected UUID uuid;
+	protected UUID punisher;
 
-	private PunishmentType type;
-	private String reason;
-	private boolean active;
+	protected PunishmentType type;
+	protected String reason;
+	protected boolean active;
 
-	private LocalDateTime timestamp;
-	private int seconds;
-	private LocalDateTime expiration;
-	private LocalDateTime received;
+	protected LocalDateTime timestamp;
+	protected int seconds;
+	protected LocalDateTime expiration;
+	protected LocalDateTime received;
 
-	private UUID remover;
-	private LocalDateTime removed;
+	protected UUID remover;
+	protected LocalDateTime removed;
 
-	private UUID replacedBy;
+	protected UUID replacedBy;
 
 	public boolean isActive() {
 		LocalDateTime now = LocalDateTime.now();
@@ -55,15 +55,15 @@ public class Punishment extends PlayerOwnedObject {
 		return !isNullOrEmpty(reason);
 	}
 
-	boolean hasBeenRemoved() {
+	public boolean hasBeenRemoved() {
 		return removed != null;
 	}
 
-	boolean hasBeenReceived() {
+	public boolean hasBeenReceived() {
 		return received != null;
 	}
 
-	boolean hasBeenReplaced() {
+	public boolean hasBeenReplaced() {
 		return replacedBy != null;
 	}
 

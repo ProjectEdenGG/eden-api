@@ -3,7 +3,7 @@ package eden.models.punishments;
 import dev.morphia.annotations.Converters;
 import dev.morphia.annotations.Entity;
 import dev.morphia.annotations.Id;
-import eden.models.PlayerOwnedObject;
+import eden.interfaces.PlayerOwnedObject;
 import eden.mongodb.serializers.UUIDConverter;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -26,12 +26,12 @@ import java.util.UUID;
 @AllArgsConstructor
 @RequiredArgsConstructor
 @Converters(UUIDConverter.class)
-public class NameBanConfig extends PlayerOwnedObject {
+public class NameBanConfig implements PlayerOwnedObject {
 	@Id
 	@NonNull
-	private UUID uuid;
-	private Map<UUID, List<String>> bannedNames = new HashMap<>();
-	private Set<String> bannedWords = new HashSet<>();
+	protected UUID uuid;
+	protected Map<UUID, List<String>> bannedNames = new HashMap<>();
+	protected Set<String> bannedWords = new HashSet<>();
 
 	public boolean playerIsBanned(UUID uuid, String name) {
 		List<String> names = bannedNames.get(uuid);

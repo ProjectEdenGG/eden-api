@@ -1,41 +1,40 @@
-package eden.models;
+package eden.interfaces;
 
 import eden.models.nerd.Nerd;
 import eden.models.nickname.Nickname;
 import eden.models.nickname.NicknameService;
 import eden.utils.StringUtils;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.UUID;
 
 /**
  * A mongo database object owned by a player
  */
-public abstract class PlayerOwnedObject {
+public interface PlayerOwnedObject extends Nicknamed {
 
-	public abstract UUID getUuid();
+	UUID getUuid();
 
-	public Nerd getNerd() {
+	default Nerd getNerd() {
 		return Nerd.of(getUuid());
 	}
 
-	public @NotNull String getName() {
+	default String getName() {
 		return getNerd().getName();
 	}
 
-	public @NotNull String getNickname() {
+	default String getNickname() {
 		return Nickname.of(getUuid());
 	}
 
-	protected Nickname getNicknameData() {
+	default Nickname getNicknameData() {
 		return new NicknameService().get(getUuid());
 	}
 
-	public boolean hasNickname() {
+	default boolean hasNickname() {
 		return !StringUtils.isNullOrEmpty(getNicknameData().getNicknameRaw());
 	}
 
-	public String toPrettyString() {
+	default String toPrettyString() {
 		try {
 			return StringUtils.toPrettyString(this);
 		} catch (Exception ignored) {
@@ -43,8 +42,11 @@ public abstract class PlayerOwnedObject {
 		}
 	}
 
-	public boolean equals(Object obj) {
+/* fuck
+	default boolean equals(Object obj) {
 		if (!this.getClass().equals(obj.getClass())) return false;
 		return getUuid().equals(((PlayerOwnedObject) obj).getUuid());
 	}
+*/
+
 }

@@ -7,60 +7,66 @@ import com.mongodb.ServerAddress;
 import dev.morphia.Datastore;
 import dev.morphia.Morphia;
 import dev.morphia.annotations.Entity;
+import dev.morphia.converters.TypeConverter;
+import dev.morphia.mapping.Mapper;
 import dev.morphia.mapping.MapperOptions;
 import dev.morphia.mapping.MapperOptions.Builder;
+import eden.EdenAPI;
 import eden.mongodb.serializers.BigDecimalConverter;
 import eden.mongodb.serializers.LocalDateConverter;
 import eden.mongodb.serializers.LocalDateTimeConverter;
 import eden.mongodb.serializers.UUIDConverter;
-import eden.utils.Log;
 import eden.utils.StringUtils;
-import lombok.SneakyThrows;
+import lombok.Getter;
 import org.reflections.Reflections;
 
-public abstract class MongoDBPersistence {
+import java.lang.reflect.Constructor;
+import java.util.ArrayList;
+import java.util.List;
+
+public class MongoConnector {
 	protected static final Morphia morphia = new Morphia();
+	@Getter
 	private static Datastore datastore;
 
-	@SneakyThrows
-	private static Datastore openConnection(DatabaseConfig config) {
-		return build(config);
-	}
+	public static Datastore connect() {
+		if (datastore != null)
+			return datastore;
 
-	private static Datastore build(DatabaseConfig config) {
-		return build(config, MapperOptions.builder());
-	}
-
-	private static Datastore build(DatabaseConfig config, Builder options) {
 		// Properly merge deleted hashmaps and null vars
-		options.storeEmpties(true).storeNulls(true);
+		Builder options = MapperOptions.builder().storeEmpties(true).storeNulls(true).classLoader(EdenAPI.get().getClassLoader());
 		morphia.getMapper().setOptions(options.build());
 
+		DatabaseConfig config = EdenAPI.get().getDatabaseConfig();
 		// Load classes into memory once
 		if (!StringUtils.isNullOrEmpty(config.getModelPath()))
 			new Reflections(config.getModelPath()).getTypesAnnotatedWith(Entity.class);
 
 		MongoCredential root = MongoCredential.createScramSha1Credential(config.getUsername(), "admin", config.getPassword().toCharArray());
 		MongoClient mongoClient = new MongoClient(new ServerAddress(), root, MongoClientOptions.builder().build());
-		Datastore datastore = morphia.createDatastore(mongoClient, (config.getPrefix() == null ? "" : config.getPrefix() + "_") + "bearnation");
-		morphia.getMapper().getConverters().addConverter(new BigDecimalConverter(morphia.getMapper()));
-		morphia.getMapper().getConverters().addConverter(new LocalDateConverter(morphia.getMapper()));
-		morphia.getMapper().getConverters().addConverter(new LocalDateTimeConverter(morphia.getMapper()));
-		morphia.getMapper().getConverters().addConverter(new UUIDConverter(morphia.getMapper()));
+		String database = (config.getPrefix() == null ? "" : config.getPrefix() + "_") + "bearnation";
+		datastore = morphia.createDatastore(mongoClient, database);
 		datastore.ensureIndexes();
-		return datastore;
-	}
 
-	public static Datastore getConnection(DatabaseConfig config) {
-		try {
-			if (datastore == null)
-				datastore = openConnection(config);
-			return datastore;
-		} catch (Exception ex) {
-			Log.severe("Could not establish connection to MongoDB: " + ex.getMessage());
-			ex.printStackTrace();
-			return null;
+		List<? extends Class<? extends TypeConverter>> classes = new ArrayList<Class<? extends TypeConverter>>() {{
+			add(BigDecimalConverter.class);
+			add(LocalDateConverter.class);
+			add(LocalDateTimeConverter.class);
+			add(UUIDConverter.class);
+			addAll(EdenAPI.get().getMongoConverters());
+		}};
+
+		for (Class<? extends TypeConverter> clazz : classes) {
+			try {
+				Constructor<? extends TypeConverter> constructor = clazz.getDeclaredConstructor(Mapper.class);
+				TypeConverter instance = constructor.newInstance(morphia.getMapper());
+				morphia.getMapper().getConverters().addConverter(instance);
+			} catch (Exception ex) {
+				ex.printStackTrace();
+			}
 		}
+
+		return datastore;
 	}
 
 	public static void shutdown() {

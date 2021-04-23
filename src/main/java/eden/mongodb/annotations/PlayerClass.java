@@ -1,6 +1,6 @@
 package eden.mongodb.annotations;
 
-import eden.models.PlayerOwnedObject;
+import eden.interfaces.PlayerOwnedObject;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

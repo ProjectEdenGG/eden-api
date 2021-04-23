@@ -1,8 +1,12 @@
 package eden;
 
+import dev.morphia.converters.TypeConverter;
 import eden.mongodb.DatabaseConfig;
-import eden.mongodb.MongoDBPersistence;
+import eden.mongodb.MongoConnector;
 import eden.utils.Env;
+
+import java.util.Collection;
+import java.util.Collections;
 
 public abstract class EdenAPI {
 	protected static EdenAPI instance;
@@ -15,8 +19,16 @@ public abstract class EdenAPI {
 
 	abstract public DatabaseConfig getDatabaseConfig();
 
-	public void shutdown() {
-		MongoDBPersistence.shutdown();
+	public ClassLoader getClassLoader() {
+		return getClass().getClassLoader();
+	}
+
+	public Collection<? extends Class<? extends TypeConverter>> getMongoConverters() {
+		return Collections.emptyList();
+	}
+
+	public static void shutdown() {
+		MongoConnector.shutdown();
 	}
 
 }

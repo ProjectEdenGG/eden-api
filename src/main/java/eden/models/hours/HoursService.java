@@ -7,7 +7,7 @@ import com.mongodb.client.model.BsonField;
 import com.mongodb.client.model.Sorts;
 import dev.morphia.annotations.Id;
 import eden.exceptions.EdenException;
-import eden.models.PlayerOwnedObject;
+import eden.interfaces.PlayerOwnedObject;
 import eden.mongodb.MongoService;
 import eden.mongodb.annotations.PlayerClass;
 import eden.utils.Utils;
@@ -21,6 +21,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.time.LocalDate;
 import java.time.YearMonth;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -31,6 +32,7 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import static com.mongodb.client.model.Aggregates.group;
+import static com.mongodb.client.model.Aggregates.limit;
 import static com.mongodb.client.model.Aggregates.match;
 import static com.mongodb.client.model.Aggregates.project;
 import static com.mongodb.client.model.Aggregates.sort;
@@ -55,15 +57,31 @@ public class HoursService extends MongoService<Hours> {
 		}
 		return hours;
 	}
+
 	private static final MongoCollection<Document> collection = database.getDatabase().getCollection("hours");
+
+	@Override
+	@Deprecated // Use HoursService#update to increment daily counter
+	public void save(Hours object) {
+		super.save(object);
+	}
+
+	public void update(Hours hours) {
+		LocalDate now = LocalDate.now();
+		database.update(
+				database.createQuery(Hours.class).field(_id).equal(hours.getUuid()),
+				database.createUpdateOperations(Hours.class).set("times." + DateTimeFormatter.ISO_DATE.format(now), hours.getDaily(now))
+		);
+	}
 
 	@Data
 	@AllArgsConstructor
-	public static class PageResult extends PlayerOwnedObject {
+	public static class PageResult implements PlayerOwnedObject {
 		@Id
 		@NonNull
 		private UUID uuid;
 		private int total;
+
 	}
 
 	public List<PageResult> getPage() {
@@ -97,6 +115,24 @@ public class HoursService extends MongoService<Hours> {
 				group("$_id", new BsonField("total", new BasicDBObject("$sum", "$times.v"))),
 				sort(Sorts.descending("total"))
 		));
+	}
+
+	// TODO
+	private static final List<UUID> activePlayers = new ArrayList<>();
+
+	public List<UUID> getActivePlayers() {
+		if (activePlayers.isEmpty()) {
+			List<Bson> arguments = getTopArguments();
+			arguments.add(limit(100));
+
+			activePlayers.addAll(
+					getPageResults(collection.aggregate(arguments)).stream()
+							.map(PageResult::getUuid)
+							.collect(Collectors.toList())
+			);
+		}
+
+		return activePlayers;
 	}
 
 	public HoursType getType(String type) {

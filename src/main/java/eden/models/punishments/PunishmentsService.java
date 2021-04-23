@@ -5,7 +5,7 @@ import com.mongodb.client.model.Aggregates;
 import com.mongodb.client.model.Sorts;
 import dev.morphia.annotations.Id;
 import dev.morphia.query.Query;
-import eden.models.PlayerOwnedObject;
+import eden.interfaces.PlayerOwnedObject;
 import eden.mongodb.MongoService;
 import eden.mongodb.annotations.PlayerClass;
 import lombok.AllArgsConstructor;
@@ -56,7 +56,7 @@ public class PunishmentsService extends MongoService<Punishments> {
 
 	@Data
 	@AllArgsConstructor
-	public static class PageResult extends PlayerOwnedObject {
+	public static class PageResult implements PlayerOwnedObject {
 		@Id
 		@NonNull
 		private UUID uuid;

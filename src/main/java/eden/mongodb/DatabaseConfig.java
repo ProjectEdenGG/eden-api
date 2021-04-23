@@ -1,5 +1,6 @@
 package eden.mongodb;
 
+import eden.utils.Env;
 import lombok.Builder;
 import lombok.Data;
 
@@ -16,5 +17,14 @@ public class DatabaseConfig {
 	private String password = "password";
 	private String prefix;
 	private String modelPath;
+
+	public static class DatabaseConfigBuilder {
+
+		public DatabaseConfigBuilder env(final Env env) {
+			this.prefix = env == Env.PROD ? null : env.name().toLowerCase();
+			return this;
+		}
+
+	}
 
 }

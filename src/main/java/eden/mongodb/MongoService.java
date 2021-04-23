@@ -5,10 +5,9 @@ import dev.morphia.Datastore;
 import dev.morphia.annotations.Entity;
 import dev.morphia.query.Sort;
 import dev.morphia.query.UpdateException;
-import eden.EdenAPI;
 import eden.exceptions.EdenException;
 import eden.exceptions.postconfigured.PlayerNotFoundException;
-import eden.models.PlayerOwnedObject;
+import eden.interfaces.PlayerOwnedObject;
 import eden.models.nerd.Nerd;
 import eden.models.nerd.NerdService;
 import eden.mongodb.annotations.PlayerClass;
@@ -22,6 +21,7 @@ import org.reflections.Reflections;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -45,6 +45,15 @@ public abstract class MongoService<T extends PlayerOwnedObject> {
 	private static final Map<Class<? extends MongoService>, Class<? extends PlayerOwnedObject>> serviceToObjectMap = new HashMap<>();
 
 	static {
+		loadServices();
+	}
+
+	protected static void loadServices() {
+		loadServices(Collections.emptySet());
+	}
+
+	protected static void loadServices(Set<Class<? extends MongoService>> newServices) {
+		services.addAll(newServices);
 		for (Class<? extends MongoService> service : services) {
 			PlayerClass annotation = service.getAnnotation(PlayerClass.class);
 			if (annotation == null) {
@@ -55,6 +64,11 @@ public abstract class MongoService<T extends PlayerOwnedObject> {
 			objectToServiceMap.put(annotation.value(), service);
 			serviceToObjectMap.put(service, annotation.value());
 		}
+	}
+
+	protected Class<T> getPlayerClass() {
+		PlayerClass annotation = getClass().getAnnotation(PlayerClass.class);
+		return annotation == null ? null : (Class<T>) annotation.value();
 	}
 
 	public static Class<? extends PlayerOwnedObject> ofService(MongoService mongoService) {
@@ -74,7 +88,7 @@ public abstract class MongoService<T extends PlayerOwnedObject> {
 	}
 
 	static {
-		database = MongoDBPersistence.getConnection(EdenAPI.get().getDatabaseConfig());
+		database = MongoConnector.connect();
 	}
 
 	public MongoCollection<Document> getCollection() {
@@ -109,11 +123,6 @@ public abstract class MongoService<T extends PlayerOwnedObject> {
 
 		for (T player : getCache().values())
 			executor.submit(() -> saveSync(player));
-	}
-
-	public Class<T> getPlayerClass() {
-		PlayerClass annotation = getClass().getAnnotation(PlayerClass.class);
-		return annotation == null ? null : (Class<T>) annotation.value();
 	}
 
 	public T get(String name) {
