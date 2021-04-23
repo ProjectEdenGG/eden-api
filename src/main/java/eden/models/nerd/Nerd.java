@@ -63,6 +63,8 @@ public class Nerd implements PlayerOwnedObject {
 	public @NotNull String getName() {
 		if (StringUtils.isUUID0(uuid))
 			return "Console";
+		if (name == null)
+			return getUuid().toString();
 		return name;
 	}
 
