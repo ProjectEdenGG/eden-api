@@ -195,7 +195,7 @@ public abstract class MongoService<T extends PlayerOwnedObject> {
 			return (T) constructor.newInstance(uuid);
 		} catch (NoSuchMethodException | IllegalAccessException | InstantiationException | InvocationTargetException ex) {
 			ex.printStackTrace();
-			throw new EdenException(this.getClass().getSimpleName() + " not implemented correctly");
+			throw new EdenException(this.getClass().getSimpleName() + " does not have a UUID constructor (missing @NonNull on UUID or @RequiredArgsConstructor on class?)");
 		}
 	}
 

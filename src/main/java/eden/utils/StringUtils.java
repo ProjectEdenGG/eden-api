@@ -126,7 +126,7 @@ public class StringUtils {
 		return formatted;
 	}
 
-	private static String uuidUnformat(String uuid) {
+	public static String uuidUnformat(String uuid) {
 		return uuid.replaceAll("-", "");
 	}
 
@@ -170,7 +170,7 @@ public class StringUtils {
 		return new GsonBuilder().setPrettyPrinting().create();
 	}
 
-	private static final NumberFormat moneyFormat = NumberFormat.getCurrencyInstance();
+	protected static final NumberFormat moneyFormat = NumberFormat.getCurrencyInstance();
 
 	public static String pretty(Number number) {
 		String format = trimFirst(moneyFormat.format(number));
@@ -259,10 +259,10 @@ public class StringUtils {
 	}
 
 	@Getter
-	private static final DecimalFormat df = new DecimalFormat("#.00");
+	protected static final DecimalFormat df = new DecimalFormat("#.00");
 
 	@Getter
-	private static final DecimalFormat nf = new DecimalFormat("#");
+	protected static final DecimalFormat nf = new DecimalFormat("#");
 
 	public static DecimalFormat getFormatter(Class<?> type) {
 		if (Integer.class == type || Integer.TYPE == type) return nf;

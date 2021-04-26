@@ -74,6 +74,7 @@ public class Utils {
 	public static class MinMaxResult<T> {
 		private final T object;
 		private final Number value;
+
 		public int getInteger() {
 			return value.intValue();
 		}
