@@ -38,7 +38,7 @@ public abstract class MongoService<T extends PlayerOwnedObject> {
 	protected static String _id = "_id";
 
 	@Getter
-	private static final Set<Class<? extends MongoService>> services = new Reflections(MongoService.class.getPackage().getName()).getSubTypesOf(MongoService.class);
+	private static final Set<Class<? extends MongoService>> services = new Reflections("eden.models").getSubTypesOf(MongoService.class);
 	@Getter
 	private static final Map<Class<? extends PlayerOwnedObject>, Class<? extends MongoService>> objectToServiceMap = new HashMap<>();
 	@Getter
@@ -48,11 +48,19 @@ public abstract class MongoService<T extends PlayerOwnedObject> {
 		loadServices();
 	}
 
-	protected static void loadServices() {
+	public static void loadServices() {
 		loadServices(Collections.emptySet());
 	}
 
-	protected static void loadServices(Set<Class<? extends MongoService>> newServices) {
+	public static void loadServices(String path) {
+		loadServices(new Reflections("me.pugabyte.nexus.models"));
+	}
+
+	public static void loadServices(Reflections reflections) {
+		loadServices(reflections.getSubTypesOf(MongoService.class));
+	}
+
+	public static void loadServices(Set<Class<? extends MongoService>> newServices) {
 		services.addAll(newServices);
 		for (Class<? extends MongoService> service : services) {
 			PlayerClass annotation = service.getAnnotation(PlayerClass.class);
