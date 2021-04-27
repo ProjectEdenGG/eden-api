@@ -212,6 +212,10 @@ public class Utils {
 		return collection == null || collection.isEmpty();
 	}
 
+	public static boolean isNullOrEmpty(Map<?, ?> map) {
+		return map == null || map.isEmpty();
+	}
+
 	public static <T> List<T> combine(List<T>... lists) {
 		return new ArrayList<T>() {{
 			for (List<T> list : lists)

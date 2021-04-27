@@ -176,7 +176,7 @@ public abstract class MongoService<T extends PlayerOwnedObject> {
 	public String sanitize(String input) {
 		if (Pattern.compile("[\\w\\d\\s]+").matcher(input).matches())
 			return input;
-		throw new EdenException("Unsafe argument");
+		throw new RuntimeException("Unsafe argument");
 	}
 
 	@NotNull
@@ -232,9 +232,26 @@ public abstract class MongoService<T extends PlayerOwnedObject> {
 				.find().toList();
 	}
 
+	protected boolean deleteIf(T object) {
+		return false;
+	}
+
+	protected void beforeSave(T object) {
+	}
+
+	protected void beforeDelete(T object) {
+	}
+
 	public void saveSync(T object) {
 		if (!isV4Uuid(object.getUuid()) && !object.getUuid().equals(StringUtils.getUUID0()))
 			return;
+
+		if (deleteIf(object)) {
+			deleteSync(object);
+			return;
+		}
+
+		beforeSave(object);
 
 		try {
 			database.merge(object);
@@ -256,6 +273,8 @@ public abstract class MongoService<T extends PlayerOwnedObject> {
 	public void deleteSync(T object) {
 		if (!isV4Uuid(object.getUuid()) && !object.getUuid().equals(StringUtils.getUUID0()))
 			return;
+
+		beforeDelete(object);
 
 		database.delete(object);
 		getCache().remove(object.getUuid());
