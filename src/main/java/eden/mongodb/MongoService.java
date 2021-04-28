@@ -21,6 +21,7 @@ import org.reflections.Reflections;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -64,6 +65,9 @@ public abstract class MongoService<T extends PlayerOwnedObject> {
 	public static void loadServices(Set<Class<? extends MongoService>> newServices) {
 		services.addAll(newServices);
 		for (Class<? extends MongoService> service : services) {
+			if (Modifier.isAbstract(service.getModifiers()))
+				continue;
+
 			PlayerClass annotation = service.getAnnotation(PlayerClass.class);
 			if (annotation == null) {
 				Log.warn(service.getSimpleName() + " does not have @PlayerClass annotation");
@@ -174,10 +178,10 @@ public abstract class MongoService<T extends PlayerOwnedObject> {
 		deleteAllSync();
 	}
 
-	public String sanitize(String input) {
+	protected String sanitize(String input) {
 		if (Pattern.compile("[\\w\\d\\s]+").matcher(input).matches())
 			return input;
-		throw new RuntimeException("Unsafe argument");
+		throw new EdenException("Unsafe argument");
 	}
 
 	@NotNull
