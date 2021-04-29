@@ -258,21 +258,28 @@ public abstract class MongoService<T extends PlayerOwnedObject> {
 
 		beforeSave(object);
 
+		saveSyncReal(object);
+	}
+
+	protected void saveSyncReal(T object) {
 		try {
 			database.merge(object);
 		} catch (UpdateException doesntExistYet) {
 			try {
 				database.save(object);
 			} catch (Exception ex2) {
-				String toString = object.toString();
-				Log.warn("Error saving " + object.getClass().getSimpleName() + (toString.length() >= Short.MAX_VALUE ? "" : ": " + toString));
-				ex2.printStackTrace();
+				handleSaveException(object, ex2, "saving");
 			}
 		} catch (Exception ex3) {
-			String toString = object.toString();
-			Log.warn("Error updating " + object.getClass().getSimpleName() + (toString.length() >= Short.MAX_VALUE ? "" : ": " + toString));
-			ex3.printStackTrace();
+			handleSaveException(object, ex3, "updating");
 		}
+	}
+
+	protected void handleSaveException(T object, Exception ex, String type) {
+		String toString = object.toString();
+		String extra = toString.length() >= Short.MAX_VALUE ? "" : ": " + toString;
+		Log.warn("Error " + type + " " + object.getClass().getSimpleName() + extra);
+		ex.printStackTrace();
 	}
 
 	public void deleteSync(T object) {
