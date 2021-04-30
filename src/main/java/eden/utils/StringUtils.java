@@ -264,6 +264,12 @@ public class StringUtils {
 	@Getter
 	protected static final DecimalFormat nf = new DecimalFormat("#");
 
+	@Getter
+	protected static final DecimalFormat cdf = new DecimalFormat("#,###.00"); // comma decimal formatter
+
+	@Getter
+	protected static final DecimalFormat cnf = new DecimalFormat("#,###"); // comma number formatter
+
 	public static DecimalFormat getFormatter(Class<?> type) {
 		if (Integer.class == type || Integer.TYPE == type) return nf;
 		if (Double.class == type || Double.TYPE == type) return df;
