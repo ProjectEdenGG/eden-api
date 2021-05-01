@@ -8,6 +8,7 @@ import lombok.SneakyThrows;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
+import okhttp3.ResponseBody;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.InvocationTargetException;
@@ -284,8 +285,13 @@ public class Utils {
 		OkHttpClient client = new OkHttpClient();
 		Request request = new Request.Builder().url(url).build();
 		Response response = client.newCall(request).execute();
-		if (response.body() != null)
-			return SHAsum(response.body().bytes());
+		return createSha1(response.body());
+	}
+
+	@SneakyThrows
+	public static String createSha1(ResponseBody body) {
+		if (body != null)
+			return SHAsum(body.bytes());
 		return null;
 	}
 
