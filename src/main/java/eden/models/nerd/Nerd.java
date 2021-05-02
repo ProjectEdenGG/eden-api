@@ -4,7 +4,6 @@ import dev.morphia.annotations.Converters;
 import dev.morphia.annotations.Entity;
 import dev.morphia.annotations.Id;
 import eden.exceptions.EdenException;
-import eden.interfaces.HasUniqueId;
 import eden.interfaces.PlayerOwnedObject;
 import eden.mongodb.serializers.LocalDateConverter;
 import eden.mongodb.serializers.LocalDateTimeConverter;
@@ -15,6 +14,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import me.lexikiq.HasUniqueId;
 import org.jetbrains.annotations.NotNull;
 
 import java.time.LocalDate;

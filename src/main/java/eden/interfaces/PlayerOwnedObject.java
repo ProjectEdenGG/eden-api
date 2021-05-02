@@ -4,6 +4,7 @@ import eden.models.nerd.Nerd;
 import eden.models.nickname.Nickname;
 import eden.models.nickname.NicknameService;
 import eden.utils.StringUtils;
+import me.lexikiq.HasUniqueId;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.UUID;
