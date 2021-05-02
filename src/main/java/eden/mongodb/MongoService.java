@@ -7,6 +7,7 @@ import dev.morphia.query.Sort;
 import dev.morphia.query.UpdateException;
 import eden.exceptions.EdenException;
 import eden.exceptions.postconfigured.PlayerNotFoundException;
+import eden.interfaces.HasUniqueId;
 import eden.interfaces.PlayerOwnedObject;
 import eden.models.nerd.Nerd;
 import eden.models.nerd.NerdService;
@@ -145,8 +146,8 @@ public abstract class MongoService<T extends PlayerOwnedObject> {
 		return get(nerd);
 	}
 
-	public T get(PlayerOwnedObject player) {
-		return get(player.getUuid());
+	public T get(HasUniqueId player) {
+		return get(player.getUniqueId());
 	}
 
 	@NotNull
