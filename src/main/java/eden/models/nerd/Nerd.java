@@ -4,6 +4,7 @@ import dev.morphia.annotations.Converters;
 import dev.morphia.annotations.Entity;
 import dev.morphia.annotations.Id;
 import eden.exceptions.EdenException;
+import eden.interfaces.HasUniqueId;
 import eden.interfaces.PlayerOwnedObject;
 import eden.mongodb.serializers.LocalDateConverter;
 import eden.mongodb.serializers.LocalDateTimeConverter;
@@ -53,7 +54,7 @@ public class Nerd implements PlayerOwnedObject {
 		return new NerdService().get(name);
 	}
 
-	public static Nerd of(PlayerOwnedObject player) {
+	public static Nerd of(HasUniqueId player) {
 		return new NerdService().get(player);
 	}
 
