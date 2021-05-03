@@ -77,7 +77,7 @@
 	</properties>
 	<repositories>
 		<repository>
-			<id>nexus-snapshots</id>
+			<id>projecteden-repo</id>
 			<url>https://sonatype.projecteden.gg/repository/maven-public/</url>
 		</repository>
 	</repositories>
@@ -148,7 +148,7 @@
 
 	<distributionManagement>
 		<snapshotRepository>
-			<id>nexus-snapshots</id>
+			<id>projecteden-repo</id>
 			<url>https://sonatype.projecteden.gg/repository/maven-snapshots</url>
 		</snapshotRepository>
 	</distributionManagement>
