@@ -12,6 +12,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import me.lexikiq.HasUniqueId;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.UUID;
@@ -36,7 +37,7 @@ public class Nickname implements PlayerOwnedObject {
 		return new NicknameService().get(name).getNickname();
 	}
 
-	public static String of(PlayerOwnedObject player) {
+	public static String of(HasUniqueId player) {
 		return new NicknameService().get(player).getNickname();
 	}
 

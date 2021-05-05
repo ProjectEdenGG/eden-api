@@ -11,6 +11,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import me.lexikiq.HasUniqueId;
 import org.jetbrains.annotations.NotNull;
 
 import java.time.LocalDateTime;
@@ -43,7 +44,7 @@ public class Punishments implements PlayerOwnedObject {
 		return new PunishmentsService().get(name);
 	}
 
-	public static Punishments of(PlayerOwnedObject player) {
+	public static Punishments of(HasUniqueId player) {
 		return new PunishmentsService().get(player);
 	}
 
