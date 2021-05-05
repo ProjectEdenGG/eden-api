@@ -4,25 +4,36 @@ import eden.models.nerd.Nerd;
 import eden.models.nickname.Nickname;
 import eden.models.nickname.NicknameService;
 import eden.utils.StringUtils;
+import me.lexikiq.HasUniqueId;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.UUID;
 
 /**
  * A mongo database object owned by a player
  */
-public interface PlayerOwnedObject extends Nicknamed {
+public interface PlayerOwnedObject extends Nicknamed, HasUniqueId {
 
-	UUID getUuid();
+	@NotNull UUID getUuid();
 
-	default Nerd getNerd() {
+	/**
+	 * Gets the unique ID of this object. Alias for {@link #getUuid()}, for compatibility with {@link HasUniqueId}.
+	 * @return this object's unique ID
+	 */
+	@Override @NotNull
+	default UUID getUniqueId() {
+		return getUuid();
+	}
+
+	default @NotNull Nerd getNerd() {
 		return Nerd.of(getUuid());
 	}
 
-	default String getName() {
+	default @NotNull String getName() {
 		return getNerd().getName();
 	}
 
-	default String getNickname() {
+	default @NotNull String getNickname() {
 		return Nickname.of(getUuid());
 	}
 

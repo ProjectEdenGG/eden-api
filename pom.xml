@@ -4,7 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>me.pugabyte</groupId>
 	<artifactId>eden-api</artifactId>
-	<version>1.0.0-SNAPSHOT</version>
+	<version>1.1.0-SNAPSHOT</version>
 	<build>
 		<sourceDirectory>src/main/java</sourceDirectory>
 		<testSourceDirectory>src/test/java</testSourceDirectory>
@@ -68,11 +68,46 @@
 					</executions>
 				</plugin>
 			-->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-source-plugin</artifactId>
+				<version>3.2.0</version>
+				<executions>
+					<execution>
+						<id>attach-sources</id>
+						<goals>
+							<goal>jar</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-javadoc-plugin</artifactId>
+				<version>3.2.0</version>
+				<executions>
+					<execution>
+						<id>attach-javadocs</id>
+						<goals>
+							<goal>jar</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<javadocExecutable>${java.home}/bin/javadoc</javadocExecutable>
+				</configuration>
+			</plugin>
 		</plugins>
 	</build>
 	<properties>
 		<lombok.encoding>UTF-8</lombok.encoding>
 	</properties>
+	<repositories>
+		<repository>
+			<id>projecteden-repo</id>
+			<url>https://sonatype.projecteden.gg/repository/maven-public/</url>
+		</repository>
+	</repositories>
 	<dependencies>
 		<dependency>
 			<groupId>org.projectlombok</groupId>
@@ -131,5 +166,17 @@
 			<artifactId>gson</artifactId>
 			<version>2.8.6</version>
 		</dependency>
+		<dependency>
+			<groupId>me.lexikiq</groupId>
+			<artifactId>parchment-common</artifactId>
+			<version>dev-SNAPSHOT</version>
+		</dependency>
 	</dependencies>
+
+	<distributionManagement>
+		<snapshotRepository>
+			<id>projecteden-repo</id>
+			<url>https://sonatype.projecteden.gg/repository/maven-snapshots</url>
+		</snapshotRepository>
+	</distributionManagement>
 </project>

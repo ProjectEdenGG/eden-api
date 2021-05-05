@@ -14,6 +14,7 @@ import eden.mongodb.annotations.PlayerClass;
 import eden.utils.Log;
 import eden.utils.StringUtils;
 import lombok.Getter;
+import me.lexikiq.HasUniqueId;
 import org.apache.commons.lang3.Validate;
 import org.bson.Document;
 import org.jetbrains.annotations.NotNull;
@@ -145,8 +146,8 @@ public abstract class MongoService<T extends PlayerOwnedObject> {
 		return get(nerd);
 	}
 
-	public T get(PlayerOwnedObject player) {
-		return get(player.getUuid());
+	public T get(HasUniqueId player) {
+		return get(player.getUniqueId());
 	}
 
 	@NotNull

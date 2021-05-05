@@ -14,6 +14,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import me.lexikiq.HasUniqueId;
 import org.jetbrains.annotations.NotNull;
 
 import java.time.LocalDate;
@@ -53,7 +54,7 @@ public class Nerd implements PlayerOwnedObject {
 		return new NerdService().get(name);
 	}
 
-	public static Nerd of(PlayerOwnedObject player) {
+	public static Nerd of(HasUniqueId player) {
 		return new NerdService().get(player);
 	}
 
