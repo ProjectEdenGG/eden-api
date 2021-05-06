@@ -281,11 +281,12 @@ public class StringUtils {
 		throw new EdenException("No formatter found for class " + type.getSimpleName());
 	}
 
-	private static final String HASTEBIN = "https://paste.bnn.gg/";
+	private static final String HASTEBIN = "https://paste.projecteden.gg/";
 
 	@Data
 	private static class PasteResult {
 		private String key;
+
 	}
 
 	@SneakyThrows

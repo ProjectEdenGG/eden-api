@@ -218,7 +218,7 @@ public class Utils {
 	}
 
 	public static <T> List<T> combine(List<T>... lists) {
-		return new ArrayList<T>() {{
+		return new ArrayList<>() {{
 			for (List<T> list : lists)
 				addAll(list);
 		}};

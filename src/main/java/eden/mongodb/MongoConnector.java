@@ -48,7 +48,7 @@ public class MongoConnector {
 		datastore = morphia.createDatastore(mongoClient, database);
 		datastore.ensureIndexes();
 
-		List<? extends Class<? extends TypeConverter>> classes = new ArrayList<Class<? extends TypeConverter>>() {{
+		List<? extends Class<? extends TypeConverter>> classes = new ArrayList<>() {{
 			add(BigDecimalConverter.class);
 			add(LocalDateConverter.class);
 			add(LocalDateTimeConverter.class);

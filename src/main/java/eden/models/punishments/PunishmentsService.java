@@ -39,7 +39,7 @@ public class PunishmentsService extends MongoService<Punishments> {
 	public List<Punishments> getAlts(List<Punishments> players) {
 		Query<Punishments> query = database.createQuery(Punishments.class);
 
-		List<String> ips = new ArrayList<String>() {{
+		List<String> ips = new ArrayList<>() {{
 			for (Punishments player : players) {
 				query.criteria("_id").notEqual(player.getUuid());
 				addAll(player.getIps());
@@ -65,7 +65,7 @@ public class PunishmentsService extends MongoService<Punishments> {
 	}
 
 	public List<Punishment> page(PunishmentType type, int page, int amount) {
-		List<Bson> args = new ArrayList<Bson>() {{
+		List<Bson> args = new ArrayList<>() {{
 			add(Aggregates.unwind("$punishments"));
 			add(Aggregates.replaceRoot("$punishments"));
 			add(Aggregates.sort(Sorts.descending("timestamp")));
@@ -76,7 +76,7 @@ public class PunishmentsService extends MongoService<Punishments> {
 		if (type != null)
 			args.add(2, match(eq("type", type.name())));
 
-		return new ArrayList<Punishment>() {{
+		return new ArrayList<>() {{
 			for (Document punishment : getCollection().aggregate(args))
 				add(database.getMapper().fromDBObject(database, Punishment.class, new BasicDBObject(punishment), null));
 		}};
