@@ -42,15 +42,19 @@ public class StringUtils {
 	}
 
 	public static int countUpperCase(String s) {
-		return (int) s.codePoints().filter(c-> c >= 'A' && c <= 'Z').count();
+		return (int) s.codePoints().filter(c -> c >= 'A' && c <= 'Z').count();
 	}
 
 	public static int countLowerCase(String s) {
-		return (int) s.codePoints().filter(c-> c >= 'a' && c <= 'z').count();
+		return (int) s.codePoints().filter(c -> c >= 'a' && c <= 'z').count();
 	}
 
 	public static String plural(String label, Number number) {
 		return label + (number.doubleValue() == 1 ? "" : "s");
+	}
+
+	public static String plural(String labelSingle, String labelPlural, Number number) {
+		return number.doubleValue() == 1 ? labelSingle : labelPlural;
 	}
 
 	public static String trimFirst(String string) {
