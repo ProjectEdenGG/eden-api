@@ -181,6 +181,10 @@
 	</dependencies>
 
 	<distributionManagement>
+		<repository>
+			<id>projecteden-repo</id>
+			<url>https://sonatype.projecteden.gg/repository/maven-releases</url>
+		</repository>
 		<snapshotRepository>
 			<id>projecteden-repo</id>
 			<url>https://sonatype.projecteden.gg/repository/maven-snapshots</url>
