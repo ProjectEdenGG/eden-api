@@ -12,6 +12,8 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -69,11 +71,12 @@ public class StringUtils {
 		return string.substring(0, Math.min(number, string.length()));
 	}
 
-	public static String camelCase(Enum<?> _enum) {
-		if (_enum == null) return null;
+	public static @NotNull String camelCase(Enum<?> _enum) {
+		if (_enum == null) return "null";
 		return camelCase(_enum.name());
 	}
 
+	@Contract("null -> null; !null -> !null")
 	public static String camelCase(String text) {
 		if (isNullOrEmpty(text))
 			return text;
