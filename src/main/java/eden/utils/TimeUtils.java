@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.ToString;
 
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -316,6 +317,10 @@ public class TimeUtils {
 
 		public int x(double multiplier) {
 			return (int) (value * multiplier);
+		}
+
+		public Duration duration(long multiplier) {
+			return Duration.ofSeconds(value).dividedBy(20).multipliedBy(multiplier);
 		}
 
 	}
