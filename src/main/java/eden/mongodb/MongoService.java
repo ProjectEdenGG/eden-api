@@ -158,6 +158,10 @@ public abstract class MongoService<T extends PlayerOwnedObject> {
 //			return getNoCache(uuid);
 	}
 
+	public T get0() {
+		return get(StringUtils.getUUID0());
+	}
+
 	public void save(T object) {
 		checkType(object);
 		saveSync(object);
