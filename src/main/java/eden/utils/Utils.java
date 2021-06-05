@@ -201,6 +201,8 @@ public class Utils {
 			return false;
 		if (Modifier.isAbstract(clazz.getModifiers()))
 			return false;
+		if (Modifier.isInterface(clazz.getModifiers()))
+			return false;
 		if (clazz.getAnnotation(Disabled.class) != null)
 			return false;
 		if (clazz.getAnnotation(Environments.class) != null && !Env.applies(clazz.getAnnotation(Environments.class).value()))
