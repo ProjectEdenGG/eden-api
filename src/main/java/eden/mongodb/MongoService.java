@@ -256,12 +256,12 @@ public abstract class MongoService<T extends PlayerOwnedObject> {
 		if (!isV4Uuid(object.getUuid()) && !object.getUuid().equals(StringUtils.getUUID0()))
 			return;
 
+		beforeSave(object);
+
 		if (deleteIf(object)) {
 			deleteSync(object);
 			return;
 		}
-
-		beforeSave(object);
 
 		saveSyncReal(object);
 	}
