@@ -219,9 +219,9 @@ public class Utils {
 		return map == null || map.isEmpty();
 	}
 
-	public static <T> List<T> combine(List<T>... lists) {
+	public static <T> List<T> combine(Collection<T>... lists) {
 		return new ArrayList<>() {{
-			for (List<T> list : lists)
+			for (Collection<T> list : lists)
 				addAll(list);
 		}};
 	}
