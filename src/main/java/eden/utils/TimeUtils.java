@@ -20,42 +20,52 @@ import static com.google.common.base.Strings.isNullOrEmpty;
 public class TimeUtils {
 
 	public static String longDateTimeFormat(LocalDateTime dateTime) {
+		if (dateTime == null) return null;
 		return longDateFormat(dateTime.toLocalDate()) + " " + longTimeFormat(dateTime);
 	}
 
 	public static String shortDateTimeFormat(LocalDateTime dateTime) {
+		if (dateTime == null) return null;
 		return shortDateFormat(dateTime.toLocalDate()) + " " + shortTimeFormat(dateTime);
 	}
 
 	public static String shortishDateTimeFormat(LocalDateTime dateTime) {
+		if (dateTime == null) return null;
 		return shortishDateFormat(dateTime.toLocalDate()) + " " + shortishTimeFormat(dateTime);
 	}
 
 	public static String longDateFormat(LocalDate date) {
+		if (date == null) return null;
 		return StringUtils.camelCase(date.getMonth().name()) + " " + StringUtils.getNumberWithSuffix(date.getDayOfMonth()) + ", " + date.getYear();
 	}
 
 	public static String shortDateFormat(LocalDate date) {
+		if (date == null) return null;
 		return date.format(DateTimeFormatter.ofPattern("M/d/yy"));
 	}
 
 	public static String shortishDateFormat(LocalDate date) {
+		if (date == null) return null;
 		return date.format(DateTimeFormatter.ofPattern("MM/dd/yy"));
 	}
 
 	public static String dateFormat(LocalDate date) {
+		if (date == null) return null;
 		return date.format(DateTimeFormatter.ofPattern("MM/dd/yyyy"));
 	}
 
 	public static String longTimeFormat(LocalDateTime time) {
+		if (time == null) return null;
 		return time.format(DateTimeFormatter.ofPattern("h:mm:ss a"));
 	}
 
 	public static String shortTimeFormat(LocalDateTime time) {
+		if (time == null) return null;
 		return time.format(DateTimeFormatter.ofPattern("h:mm a"));
 	}
 
 	public static String shortishTimeFormat(LocalDateTime time) {
+		if (time == null) return null;
 		return time.format(DateTimeFormatter.ofPattern("hh:mm a"));
 	}
 
