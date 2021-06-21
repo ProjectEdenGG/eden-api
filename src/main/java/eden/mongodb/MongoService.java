@@ -1,5 +1,7 @@
 package eden.mongodb;
 
+import com.mongodb.BasicDBObject;
+import com.mongodb.client.AggregateIterable;
 import com.mongodb.client.MongoCollection;
 import dev.morphia.Datastore;
 import dev.morphia.annotations.Entity;
@@ -32,6 +34,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.function.Consumer;
 import java.util.regex.Pattern;
 
 import static eden.utils.StringUtils.isV4Uuid;
@@ -160,6 +163,24 @@ public abstract class MongoService<T extends PlayerOwnedObject> {
 
 	public T get0() {
 		return get(StringUtils.getUUID0());
+	}
+
+	public void edit(String player, Consumer<T> consumer) {
+		edit(get(player), consumer);
+
+	}
+
+	public void edit(HasUniqueId player, Consumer<T> consumer) {
+		edit(get(player), consumer);
+	}
+
+	public void edit(UUID player, Consumer<T> consumer) {
+		edit(get(player), consumer);
+	}
+
+	public void edit(T object, Consumer<T> consumer) {
+		consumer.accept(object);
+		save(object);
 	}
 
 	public void save(T object) {
@@ -300,6 +321,14 @@ public abstract class MongoService<T extends PlayerOwnedObject> {
 	public void deleteAllSync() {
 		database.getCollection(getPlayerClass()).drop();
 		clearCache();
+	}
+
+	@NotNull
+	protected <U> List<U> map(AggregateIterable<Document> documents, Class<U> clazz) {
+		return new ArrayList<>() {{
+			for (Document purchase : documents)
+				add(database.getMapper().fromDBObject(database, clazz, new BasicDBObject(purchase), null));
+		}};
 	}
 
 	/*
