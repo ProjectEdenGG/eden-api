@@ -333,6 +333,15 @@ public class TimeUtils {
 			return Duration.ofSeconds(value).dividedBy(20).multipliedBy(multiplier);
 		}
 
+		/**
+		 * Duration of a fraction.
+		 * @param numerator fraction top half
+		 * @param denominator fraction bottom half
+		 */
+		public Duration duration(long numerator, long denominator) {
+			return duration(numerator).dividedBy(denominator);
+		}
+
 	}
 
 }
