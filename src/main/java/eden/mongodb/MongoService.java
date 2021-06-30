@@ -123,6 +123,10 @@ public abstract class MongoService<T extends PlayerOwnedObject> {
 			getCache().put(object.getUuid(), object);
 	}
 
+	public boolean isCached(T object) {
+		return getCache().containsKey(object.getUuid());
+	}
+
 	public void saveCache() {
 		saveCache(100);
 	}
@@ -314,8 +318,10 @@ public abstract class MongoService<T extends PlayerOwnedObject> {
 
 		beforeDelete(object);
 
+		getCache().remove(object.getUuid());
 		database.delete(object);
 		getCache().remove(object.getUuid());
+		object = null;
 	}
 
 	public void deleteAllSync() {
