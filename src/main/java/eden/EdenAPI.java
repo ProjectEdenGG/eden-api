@@ -1,5 +1,6 @@
 package eden;
 
+import com.google.gson.GsonBuilder;
 import dev.morphia.converters.TypeConverter;
 import eden.mongodb.DatabaseConfig;
 import eden.mongodb.MongoConnector;
@@ -29,6 +30,10 @@ public abstract class EdenAPI {
 
 	public static void shutdown() {
 		MongoConnector.shutdown();
+	}
+
+	public GsonBuilder getPrettyPrinter() {
+		return new GsonBuilder().setPrettyPrinting();
 	}
 
 }

@@ -1,7 +1,7 @@
 package eden.utils;
 
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
+import eden.EdenAPI;
 import eden.exceptions.EdenException;
 import lombok.Data;
 import lombok.Getter;
@@ -164,17 +164,15 @@ public class StringUtils {
 		return true;
 	}
 
+	private static final Gson prettyPrinter = EdenAPI.get().getPrettyPrinter().create();
+
 	public static String toPrettyString(Object object) {
 		if (object == null) return null;
 		try {
-			return getPrettyPrinter().toJson(object);
+			return prettyPrinter.toJson(object);
 		} catch (Exception | StackOverflowError ignored) {
 			return object.toString();
 		}
-	}
-
-	public static Gson getPrettyPrinter() {
-		return new GsonBuilder().setPrettyPrinting().create();
 	}
 
 	protected static final NumberFormat moneyFormat = NumberFormat.getCurrencyInstance();

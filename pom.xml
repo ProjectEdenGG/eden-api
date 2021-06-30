@@ -4,7 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>me.pugabyte</groupId>
 	<artifactId>eden-api</artifactId>
-	<version>1.2.3</version>
+	<version>1.2.4</version>
 	<build>
 		<sourceDirectory>src/main/java</sourceDirectory>
 		<testSourceDirectory>src/test/java</testSourceDirectory>
