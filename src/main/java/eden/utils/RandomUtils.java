@@ -18,7 +18,7 @@ public class RandomUtils {
 	}
 
 	public static boolean chanceOf(double chance) {
-		return randomInt(0, 100) <= chance;
+		return randomDouble(0, 100) <= chance;
 	}
 
 	public static int randomInt(int max) {

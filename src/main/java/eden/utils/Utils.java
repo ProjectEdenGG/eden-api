@@ -9,6 +9,7 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
+import org.jetbrains.annotations.Contract;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.InvocationTargetException;
@@ -211,10 +212,12 @@ public class Utils {
 		return true;
 	}
 
+	@Contract("null -> true")
 	public static boolean isNullOrEmpty(Collection<?> collection) {
 		return collection == null || collection.isEmpty();
 	}
 
+	@Contract("null -> true")
 	public static boolean isNullOrEmpty(Map<?, ?> map) {
 		return map == null || map.isEmpty();
 	}
