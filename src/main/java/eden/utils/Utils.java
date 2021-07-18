@@ -154,7 +154,11 @@ public class Utils {
 
 	public static Map<String, String> dump(Object object) {
 		Map<String, String> output = new HashMap<>();
-		List<Method> methods = Arrays.asList(object.getClass().getDeclaredMethods());
+		List<Method> methods = new ArrayList<>() {{
+			for (Class<?> superclass : Utils.getSuperclasses(object.getClass()))
+				addAll(Arrays.asList(superclass.getDeclaredMethods()));
+		}};
+
 		for (Method method : methods) {
 			if (method.getName().matches("^(get|is|has).*") && method.getParameterCount() == 0) {
 				try {
