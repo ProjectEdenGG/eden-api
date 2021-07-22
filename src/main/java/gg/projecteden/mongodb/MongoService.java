@@ -57,7 +57,7 @@ public abstract class MongoService<T extends PlayerOwnedObject> {
 	}
 
 	public static void loadServices(String path) {
-		loadServices(new Reflections("me.pugabyte.nexus.models"));
+		loadServices(new Reflections(path));
 	}
 
 	public static void loadServices(Reflections reflections) {
