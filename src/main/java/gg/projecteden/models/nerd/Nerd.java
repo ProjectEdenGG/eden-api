@@ -44,7 +44,7 @@ public class Nerd implements PlayerOwnedObject {
 	protected LocalDate promotionDate;
 	protected String about;
 	protected boolean meetMeVideo;
-	protected Set<String> pronouns = new HashSet<>();
+	protected Set<Pronoun> pronouns = new HashSet<>();
 	protected static final LocalDateTime EARLIEST_JOIN = LocalDateTime.of(2015, 1, 1, 0, 0);
 
 	protected Set<String> aliases = new HashSet<>();
@@ -71,9 +71,36 @@ public class Nerd implements PlayerOwnedObject {
 			} catch (EdenException ex) {
 				ex.printStackTrace();
 			}
-			return "api-" + getUuid().toString();
+			return "api-" + getUuid();
 		}
 		return name;
+	}
+
+	public enum Pronoun {
+		SHE_HER,
+		THEY_THEM,
+		HE_HIM,
+		XE_XEM,
+		ANY,
+		;
+
+		@Override
+		public String toString() {
+			return format(name());
+		}
+
+		public static String format(String input) {
+			if (input == null) return null;
+			return input.replaceAll("_", "/").toLowerCase();
+		}
+
+		public static Pronoun of(String input) {
+			if (input == null) return null;
+			for (Pronoun pronoun : values())
+				if (pronoun.toString().contains(format(input)))
+					return pronoun;
+			return null;
+		}
 	}
 
 }
