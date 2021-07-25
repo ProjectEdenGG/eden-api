@@ -18,7 +18,9 @@ import gg.projecteden.utils.StringUtils;
 import lombok.Getter;
 import me.lexikiq.HasUniqueId;
 import org.apache.commons.lang3.Validate;
+import org.bson.BsonDocument;
 import org.bson.Document;
+import org.bson.json.JsonWriterSettings;
 import org.jetbrains.annotations.NotNull;
 import org.reflections.Reflections;
 
@@ -36,6 +38,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.function.Consumer;
 import java.util.regex.Pattern;
+
+import static com.mongodb.MongoClient.getDefaultCodecRegistry;
 
 public abstract class MongoService<T extends PlayerOwnedObject> {
 	protected static Datastore database;
@@ -142,6 +146,16 @@ public abstract class MongoService<T extends PlayerOwnedObject> {
 
 		for (T player : new ArrayList<>(getCache().values()))
 			executor.submit(() -> saveSync(player));
+	}
+
+	private static final JsonWriterSettings jsonWriterSettings = JsonWriterSettings.builder().indent(true).build();
+
+	public String asPrettyJson(UUID uuid) {
+		final Document document = getCollection().find(new BasicDBObject(Map.of(_id, uuid.toString()))).first();
+		if (document == null)
+			throw new EdenException("Could not find matching document");
+
+		return document.toBsonDocument(BsonDocument.class, getDefaultCodecRegistry()).toJson(jsonWriterSettings);
 	}
 
 	public T get(String name) {
