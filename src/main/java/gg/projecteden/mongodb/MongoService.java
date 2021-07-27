@@ -1,10 +1,12 @@
 package gg.projecteden.mongodb;
 
 import com.mongodb.BasicDBObject;
+import com.mongodb.DBObject;
 import com.mongodb.client.AggregateIterable;
 import com.mongodb.client.MongoCollection;
 import dev.morphia.Datastore;
 import dev.morphia.annotations.Entity;
+import dev.morphia.mapping.cache.EntityCache;
 import dev.morphia.query.Sort;
 import dev.morphia.query.UpdateException;
 import gg.projecteden.exceptions.EdenException;
@@ -16,6 +18,7 @@ import gg.projecteden.mongodb.annotations.PlayerClass;
 import gg.projecteden.utils.Log;
 import gg.projecteden.utils.StringUtils;
 import lombok.Getter;
+import lombok.SneakyThrows;
 import me.lexikiq.HasUniqueId;
 import org.apache.commons.lang3.Validate;
 import org.bson.BsonDocument;
@@ -108,6 +111,17 @@ public abstract class MongoService<T extends PlayerOwnedObject> {
 
 	static {
 		database = MongoConnector.connect();
+	}
+
+	public static DBObject serialize(Object object) {
+		return database.getMapper().toDBObject(object);
+	}
+
+	@SneakyThrows
+	public static <C> C deserialize(DBObject dbObject) {
+		final Class<C> className = (Class<C>) Class.forName((String) dbObject.get("className"));
+		final EntityCache entityCache = database.getMapper().createEntityCache();
+		return database.getMapper().fromDBObject(database, className, dbObject, entityCache);
 	}
 
 	public MongoCollection<Document> getCollection() {
