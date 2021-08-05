@@ -34,10 +34,13 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.function.BiFunction;
 import java.util.function.BiPredicate;
 import java.util.function.BooleanSupplier;
+import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -333,6 +336,99 @@ public class Utils {
 		}
 
 		return superclasses;
+	}
+
+	/**
+	 * Removes the first element from an iterable that passes the {@code predicate}.
+	 * @param predicate the predicate which returns true when an element should be removed
+	 * @param from collection to remove an object from
+	 * @return the object that was removed or null
+	 */
+	@Contract(mutates = "param2")
+	public static <T> T removeFirstIf(Predicate<T> predicate, Iterable<T> from) {
+		Objects.requireNonNull(predicate, "predicate");
+		Objects.requireNonNull(from, "from");
+
+		Iterator<T> iterator = from.iterator();
+		while (iterator.hasNext()) {
+			T item = iterator.next();
+			if (predicate.test(item)) {
+				iterator.remove();
+				return item;
+			}
+		}
+		return null;
+	}
+
+	/**
+	 * Removes any element from an iterable that passes the {@code predicate}.
+	 * @param predicate the predicate which returns true when an element should be removed
+	 * @param from collection to remove an object from
+	 * @return whether an object was removed
+	 */
+	@Contract(mutates = "param2")
+	public static <T> boolean removeIf(Predicate<T> predicate, Iterable<T> from) {
+		Objects.requireNonNull(predicate, "predicate");
+		Objects.requireNonNull(from, "from");
+
+		boolean removed = false;
+		Iterator<T> iterator = from.iterator();
+		while (iterator.hasNext()) {
+			T item = iterator.next();
+			if (predicate.test(item)) {
+				iterator.remove();
+				removed = true;
+			}
+		}
+		return removed;
+	}
+
+	/**
+	 * Removes any element from an iterable that passes the {@code predicate}
+	 * and applies it to {@code consumer}.
+	 * @param predicate the predicate which returns true when an element should be removed
+	 * @param consumer consumer to perform an action on removed elements
+	 * @param from collection to remove an object from
+	 * @return whether an object was removed
+	 */
+	@Contract(mutates = "param2")
+	public static <T> boolean removeIf(Predicate<T> predicate, Consumer<T> consumer, Iterable<T> from) {
+		Objects.requireNonNull(predicate, "predicate");
+		Objects.requireNonNull(from, "from");
+
+		boolean removed = false;
+		Iterator<T> iterator = from.iterator();
+		while (iterator.hasNext()) {
+			T item = iterator.next();
+			if (predicate.test(item)) {
+				consumer.accept(item);
+				iterator.remove();
+				removed = true;
+			}
+		}
+		return removed;
+	}
+
+	/**
+	 * Removes any element from an iterable that passes {@link Objects#equals(Object, Object)}.
+	 * @param item item to remove from the list
+	 * @param from collection to remove the item from
+	 * @return whether an object was removed
+	 */
+	public static <T> boolean removeAll(T item, Iterable<T> from) {
+		return removeIf(object -> Objects.equals(object, item), from);
+	}
+
+	/**
+	 * Removes any element from an iterable that passes {@link Objects#equals(Object, Object)}
+	 * and applies it to {@code consumer}.
+	 * @param item item to remove from the list
+	 * @param consumer consumer to perform an action on removed elements
+	 * @param from collection to remove the item from
+	 * @return whether an object was removed
+	 */
+	public static <T> boolean removeAll(T item, Consumer<T> consumer, Iterable<T> from) {
+		return removeIf(object -> Objects.equals(object, item), consumer, from);
 	}
 
 }
