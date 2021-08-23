@@ -136,7 +136,7 @@ public abstract class MongoService<T extends PlayerOwnedObject> {
 
 	public void cache(T object) {
 		if (object != null)
-			getCache().put(object.getUuid(), object);
+			getCache().putIfAbsent(object.getUuid(), object);
 	}
 
 	public boolean isCached(T object) {
