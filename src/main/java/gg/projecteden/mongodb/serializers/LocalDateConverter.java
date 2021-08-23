@@ -9,9 +9,11 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 
 @NoArgsConstructor
 public class LocalDateConverter extends TypeConverter implements SimpleValueConverter {
+	static final String PATTERN = "M/d/yyyy";
 
 	public LocalDateConverter(Mapper mapper) {
 		super(LocalDate.class);
@@ -31,7 +33,12 @@ public class LocalDateConverter extends TypeConverter implements SimpleValueConv
 	public LocalDate decode(Object value) {
 		if (!(value instanceof String string)) return null;
 		if (StringUtils.isNullOrEmpty(string)) return null;
-		return LocalDate.parse((String) value);
+
+		try {
+			return LocalDate.parse(string);
+		} catch (DateTimeParseException ex) {
+			return LocalDate.parse(string, DateTimeFormatter.ofPattern(PATTERN));
+		}
 	}
 
 }

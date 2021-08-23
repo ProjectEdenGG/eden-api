@@ -9,9 +9,11 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 
 @NoArgsConstructor
 public class LocalTimeConverter extends TypeConverter implements SimpleValueConverter {
+	static final String PATTERN = "H:mm:ss a";
 
 	public LocalTimeConverter(Mapper mapper) {
 		super(LocalTime.class);
@@ -31,7 +33,12 @@ public class LocalTimeConverter extends TypeConverter implements SimpleValueConv
 	public LocalTime decode(Object value) {
 		if (!(value instanceof String string)) return null;
 		if (StringUtils.isNullOrEmpty(string)) return null;
-		return LocalTime.parse((String) value);
+
+		try {
+			return LocalTime.parse(string);
+		} catch (DateTimeParseException ex) {
+			return LocalTime.parse(string, DateTimeFormatter.ofPattern(PATTERN));
+		}
 	}
 
 }
