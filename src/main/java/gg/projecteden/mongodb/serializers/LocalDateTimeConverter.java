@@ -4,6 +4,7 @@ import dev.morphia.converters.SimpleValueConverter;
 import dev.morphia.converters.TypeConverter;
 import dev.morphia.mapping.MappedField;
 import dev.morphia.mapping.Mapper;
+import gg.projecteden.utils.StringUtils;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
@@ -18,8 +19,8 @@ public class LocalDateTimeConverter extends TypeConverter implements SimpleValue
 
 	@Override
 	public Object encode(Object value, MappedField optionalExtraInfo) {
-		if (value == null) return null;
-		return ((LocalDateTime) value).format(DateTimeFormatter.ISO_DATE_TIME);
+		if (!(value instanceof LocalDateTime)) return null;
+		return DateTimeFormatter.ISO_LOCAL_DATE_TIME.format((LocalDateTime) value);
 	}
 
 	@Override
@@ -28,7 +29,8 @@ public class LocalDateTimeConverter extends TypeConverter implements SimpleValue
 	}
 
 	public LocalDateTime decode(Object value) {
-		if (value == null) return null;
+		if (!(value instanceof String string)) return null;
+		if (StringUtils.isNullOrEmpty(string)) return null;
 		return LocalDateTime.parse((String) value);
 	}
 
