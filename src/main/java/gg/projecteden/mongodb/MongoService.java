@@ -31,6 +31,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -132,6 +133,11 @@ public abstract class MongoService<T extends PlayerOwnedObject> {
 
 	public void clearCache() {
 		getCache().clear();
+	}
+
+	public Collection<T> cacheAll() {
+		database.createQuery(getPlayerClass()).find().forEachRemaining(this::cache);
+		return getCache().values();
 	}
 
 	public void cache(T object) {
