@@ -5,10 +5,12 @@ import dev.morphia.converters.TypeConverter;
 import dev.morphia.mapping.MappedField;
 import dev.morphia.mapping.Mapper;
 import gg.projecteden.utils.StringUtils;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
+@NoArgsConstructor
 public class LocalDateConverter extends TypeConverter implements SimpleValueConverter {
 
 	public LocalDateConverter(Mapper mapper) {
