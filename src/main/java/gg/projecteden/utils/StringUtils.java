@@ -170,7 +170,7 @@ public class StringUtils {
 		if (object == null) return null;
 		try {
 			return prettyPrinter.toJson(object);
-		} catch (Exception | StackOverflowError ignored) {
+		} catch (Throwable ignored) {
 			return object.toString();
 		}
 	}

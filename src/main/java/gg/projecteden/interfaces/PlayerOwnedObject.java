@@ -46,11 +46,7 @@ public interface PlayerOwnedObject extends Nicknamed, HasUniqueId {
 	}
 
 	default String toPrettyString() {
-		try {
-			return StringUtils.toPrettyString(this);
-		} catch (Exception ignored) {
-			return this.toString();
-		}
+		return StringUtils.toPrettyString(this);
 	}
 
 /* fuck
