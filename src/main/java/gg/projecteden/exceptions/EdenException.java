@@ -9,4 +9,8 @@ public class EdenException extends RuntimeException {
 		super(message);
 	}
 
+	public EdenException(String message, Throwable cause) {
+		super(message, cause);
+	}
+
 }
