@@ -10,6 +10,8 @@ import okhttp3.Request;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
 import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.InvocationTargetException;
@@ -429,6 +431,10 @@ public class Utils {
 	 */
 	public static <T> boolean removeAll(T item, Consumer<T> consumer, Iterable<T> from) {
 		return removeIf(object -> Objects.equals(object, item), consumer, from);
+	}
+
+	public static <T> @NotNull List<T> mutableCopyOf(@Nullable List<T> list) {
+		return new ArrayList<>(list == null ? Collections.emptyList() : list);
 	}
 
 }
