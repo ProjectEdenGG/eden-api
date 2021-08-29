@@ -108,7 +108,7 @@ public class TimeUtils {
 		public int of(String input) {
 			try {
 				double multiplier = Double.parseDouble(input.replaceAll("[^\\d.]+", ""));
-				return Time.valueOf(name()).x(multiplier);
+				return TickTime.valueOf(name()).x(multiplier);
 			} catch (NumberFormatException ex) {
 				throw new EdenException("Invalid " + name().toLowerCase() + ": &e" + input);
 			}
@@ -201,7 +201,7 @@ public class TimeUtils {
 						while (matcher.find())
 							seconds += element.of(matcher.group());
 					}
-					return of(seconds / Time.SECOND.get());
+					return of(seconds / TickTime.SECOND.get());
 				}
 
 				return of(0);
@@ -304,10 +304,38 @@ public class TimeUtils {
 
 	}
 
+	private interface TimeEnum {
+
+		int get();
+
+		default int x(int multiplier) {
+			return get() * multiplier;
+		}
+
+		default int x(double multiplier) {
+			return (int) (get() * multiplier);
+		}
+
+		default Duration duration(long multiplier) {
+			return Duration.ofSeconds(get()).dividedBy(20).multipliedBy(multiplier);
+		}
+
+		/**
+		 * Duration of a fraction.
+		 *
+		 * @param numerator   fraction top half
+		 * @param denominator fraction bottom half
+		 */
+		default Duration duration(long numerator, long denominator) {
+			return duration(numerator).dividedBy(denominator);
+		}
+
+	}
+
 	@AllArgsConstructor
-	public enum Time {
-		TICK(1),
-		SECOND(TICK.get() * 20),
+	public enum MillisTime implements TimeEnum {
+		MILLISECOND(1),
+		SECOND(MILLISECOND.get() * 1000),
 		MINUTE(SECOND.get() * 60),
 		HOUR(MINUTE.get() * 60),
 		DAY(HOUR.get() * 24),
@@ -321,25 +349,23 @@ public class TimeUtils {
 			return value;
 		}
 
-		public int x(int multiplier) {
-			return value * multiplier;
-		}
+	}
 
-		public int x(double multiplier) {
-			return (int) (value * multiplier);
-		}
+	@AllArgsConstructor
+	public enum TickTime implements TimeEnum {
+		TICK(1),
+		SECOND(TICK.get() * 20),
+		MINUTE(SECOND.get() * 60),
+		HOUR(MINUTE.get() * 60),
+		DAY(HOUR.get() * 24),
+		WEEK(DAY.get() * 7),
+		MONTH(DAY.get() * 30),
+		YEAR(DAY.get() * 365);
 
-		public Duration duration(long multiplier) {
-			return Duration.ofSeconds(value).dividedBy(20).multipliedBy(multiplier);
-		}
+		private final int value;
 
-		/**
-		 * Duration of a fraction.
-		 * @param numerator fraction top half
-		 * @param denominator fraction bottom half
-		 */
-		public Duration duration(long numerator, long denominator) {
-			return duration(numerator).dividedBy(denominator);
+		public int get() {
+			return value;
 		}
 
 	}
