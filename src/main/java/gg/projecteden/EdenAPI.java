@@ -36,4 +36,8 @@ public abstract class EdenAPI {
 		return new GsonBuilder().setPrettyPrinting();
 	}
 
+	public void sync(Runnable runnable) {
+		runnable.run();
+	}
+
 }

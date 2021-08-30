@@ -4,11 +4,14 @@ import com.cronutils.model.CronType;
 import com.cronutils.model.definition.CronDefinitionBuilder;
 import com.cronutils.model.time.ExecutionTime;
 import com.cronutils.parser.CronParser;
+import gg.projecteden.EdenAPI;
+import gg.projecteden.annotations.Async;
 import gg.projecteden.exceptions.EdenException;
 import gg.projecteden.models.scheduledjobs.ScheduledJobs;
 import gg.projecteden.models.scheduledjobs.ScheduledJobsService;
 import gg.projecteden.utils.Log;
 import lombok.Data;
+import lombok.Getter;
 import lombok.NonNull;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -45,10 +48,9 @@ public abstract class AbstractJob {
 		return new ScheduledJobsService().get0();
 	}
 
-	public static Set<Class<? extends AbstractJob>> getSubclasses() {
-		final Reflections reflections = new Reflections(ScheduledJobsService.class.getPackage().getName());
-		return reflections.getSubTypesOf(AbstractJob.class);
-	}
+	@Getter
+	private static Set<Class<? extends AbstractJob>> subclasses = new Reflections(EdenAPI.class.getPackage().getName())
+			.getSubTypesOf(AbstractJob.class);
 
 	public void setStatus(JobStatus status) {
 		jobs().get(this.status).remove(this);
@@ -75,10 +77,19 @@ public abstract class AbstractJob {
 
 		try {
 			setStatus(JobStatus.RUNNING);
-			run().thenAccept(status -> {
+
+			final Runnable runnable = () -> run().thenAccept(status -> {
 				setStatus(status);
 				completed = LocalDateTime.now();
 			});
+
+			final boolean async = getClass().getAnnotation(Async.class) != null;
+			System.out.println("Async: " + async);
+			if (async)
+				runnable.run();
+			else
+				EdenAPI.get().sync(runnable);
+
 		} catch (Exception ex) {
 			Log.severe("Error while running " + getClass().getSimpleName() + " # " + id);
 			ex.printStackTrace();
