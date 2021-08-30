@@ -12,11 +12,6 @@ import dev.morphia.mapping.Mapper;
 import dev.morphia.mapping.MapperOptions;
 import dev.morphia.mapping.MapperOptions.Builder;
 import gg.projecteden.EdenAPI;
-import gg.projecteden.mongodb.serializers.BigDecimalConverter;
-import gg.projecteden.mongodb.serializers.LocalDateConverter;
-import gg.projecteden.mongodb.serializers.LocalDateTimeConverter;
-import gg.projecteden.mongodb.serializers.LocalTimeConverter;
-import gg.projecteden.mongodb.serializers.UUIDConverter;
 import gg.projecteden.utils.StringUtils;
 import lombok.Getter;
 import org.reflections.Reflections;
@@ -50,11 +45,7 @@ public class MongoConnector {
 		datastore.ensureIndexes();
 
 		List<? extends Class<? extends TypeConverter>> classes = new ArrayList<>() {{
-			add(BigDecimalConverter.class);
-			add(LocalDateConverter.class);
-			add(LocalDateTimeConverter.class);
-			add(LocalTimeConverter.class);
-			add(UUIDConverter.class);
+			this.addAll(new Reflections(this.getClass().getPackage().getName() + ".serializers").getSubTypesOf(TypeConverter.class));
 			addAll(EdenAPI.get().getMongoConverters());
 		}};
 
