@@ -13,6 +13,8 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.io.File;
+import java.io.InputStream;
 import java.lang.reflect.Array;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -37,6 +39,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
+import java.util.Scanner;
 import java.util.function.BiFunction;
 import java.util.function.BiPredicate;
 import java.util.function.BooleanSupplier;
@@ -435,6 +438,19 @@ public class Utils {
 
 	public static <T> @NotNull List<T> mutableCopyOf(@Nullable List<T> list) {
 		return new ArrayList<>(list == null ? Collections.emptyList() : list);
+	}
+
+	@SneakyThrows
+	public static String bash(String command) {
+		return bash(command, null);
+	}
+
+	@SneakyThrows
+	public static String bash(String command, File directory) {
+		InputStream result = Runtime.getRuntime().exec(command, null, directory).getInputStream();
+		StringBuilder builder = new StringBuilder();
+		new Scanner(result).forEachRemaining(string -> builder.append(string).append(" "));
+		return builder.toString().trim();
 	}
 
 }

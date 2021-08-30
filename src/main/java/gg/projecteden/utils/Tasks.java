@@ -23,6 +23,22 @@ public class Tasks {
 		return run(scheduler().schedule(runnable, delay, TimeUnit.MILLISECONDS));
 	}
 
+	public static int repeat(MillisTime startDelay, long interval, Runnable runnable) {
+		return repeat(startDelay.get(), interval, runnable);
+	}
+
+	public static int repeat(long startDelay, MillisTime interval, Runnable runnable) {
+		return repeat(startDelay, interval.get(), runnable);
+	}
+
+	public static int repeat(MillisTime startDelay, MillisTime interval, Runnable runnable) {
+		return repeat(startDelay.get(), interval.get(), runnable);
+	}
+
+	public static int repeat(long startDelay, long interval, Runnable runnable) {
+		return run(scheduler().scheduleAtFixedRate(runnable, startDelay, interval, TimeUnit.MILLISECONDS));
+	}
+
 	@NotNull
 	private static ScheduledExecutorService scheduler() {
 		return Executors.newScheduledThreadPool(1);
