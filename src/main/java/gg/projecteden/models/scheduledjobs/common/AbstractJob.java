@@ -83,9 +83,7 @@ public abstract class AbstractJob {
 				completed = LocalDateTime.now();
 			});
 
-			final boolean async = getClass().getAnnotation(Async.class) != null;
-			System.out.println("Async: " + async);
-			if (async)
+			if (getClass().getAnnotation(Async.class) != null)
 				runnable.run();
 			else
 				EdenAPI.get().sync(runnable);
