@@ -4,7 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>gg.projecteden</groupId>
 	<artifactId>eden-api</artifactId>
-	<version>1.5.3</version>
+	<version>1.5.4</version>
 	<build>
 		<sourceDirectory>src/main/java</sourceDirectory>
 		<testSourceDirectory>src/test/java</testSourceDirectory>
@@ -114,6 +114,10 @@
 			<id>projecteden-repo</id>
 			<url>https://sonatype.projecteden.gg/repository/maven-public/</url>
 		</repository>
+		<repository>
+			<id>jda-repo</id>
+			<url>https://m2.dv8tion.net/releases</url>
+		</repository>
 	</repositories>
 	<dependencies>
 		<dependency>
@@ -182,6 +186,22 @@
 			<groupId>com.cronutils</groupId>
 			<artifactId>cron-utils</artifactId>
 			<version>9.1.5</version>
+		</dependency>
+		<dependency>
+			<groupId>net.dv8tion</groupId>
+			<artifactId>JDA</artifactId>
+			<version>4.3.0_313</version>
+			<exclusions>
+				<exclusion>
+					<groupId>club.minnced</groupId>
+					<artifactId>opus-java</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>com.vdurmont</groupId>
+			<artifactId>emoji-java</artifactId>
+			<version>5.1.1</version>
 		</dependency>
 	</dependencies>
 
