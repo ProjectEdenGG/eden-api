@@ -8,12 +8,17 @@ import gg.projecteden.utils.Env;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.UUID;
 
 public abstract class EdenAPI {
 	protected static EdenAPI instance;
 
 	public static EdenAPI get() {
 		return instance;
+	}
+
+	public UUID getAppUuid() {
+		return UUID.nameUUIDFromBytes(getClass().getSimpleName().getBytes());
 	}
 
 	abstract public Env getEnv();

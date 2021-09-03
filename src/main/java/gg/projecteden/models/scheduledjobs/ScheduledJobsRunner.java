@@ -1,5 +1,6 @@
 package gg.projecteden.models.scheduledjobs;
 
+import gg.projecteden.EdenAPI;
 import gg.projecteden.models.scheduledjobs.common.AbstractJob;
 import gg.projecteden.models.scheduledjobs.common.AbstractJob.JobStatus;
 import gg.projecteden.utils.Log;
@@ -15,9 +16,10 @@ import static gg.projecteden.models.scheduledjobs.common.AbstractJob.getNextExec
 
 public class ScheduledJobsRunner {
 	private static final ScheduledJobsService service = new ScheduledJobsService();
-	private static final ScheduledJobs jobs = service.get0();
+	private static final ScheduledJobs jobs = service.get(EdenAPI.get().getAppUuid());
 
 	public static void start() {
+		System.out.println("App UUID: " + EdenAPI.get().getAppUuid());
 		// static init
 	}
 
