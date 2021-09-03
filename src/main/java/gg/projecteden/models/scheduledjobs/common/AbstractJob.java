@@ -68,7 +68,7 @@ public abstract class AbstractJob {
 
 	public void schedule(LocalDateTime timestamp) {
 		this.timestamp = timestamp;
-		new ScheduledJobsService().edit0(jobs -> jobs.add(this));
+		new ScheduledJobsService().editApp(jobs -> jobs.add(this));
 	}
 
 	public void process() {

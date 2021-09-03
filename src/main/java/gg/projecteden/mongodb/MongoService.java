@@ -229,6 +229,10 @@ public abstract class MongoService<T extends PlayerOwnedObject> {
 		edit(get0(), consumer);
 	}
 
+	public void editApp(Consumer<T> consumer) {
+		edit(getApp(), consumer);
+	}
+
 	public void save(T object) {
 		checkType(object);
 		saveSync(object);
