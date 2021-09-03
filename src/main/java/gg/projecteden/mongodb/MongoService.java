@@ -9,6 +9,7 @@ import dev.morphia.annotations.Entity;
 import dev.morphia.mapping.cache.EntityCache;
 import dev.morphia.query.Sort;
 import dev.morphia.query.UpdateException;
+import gg.projecteden.EdenAPI;
 import gg.projecteden.exceptions.EdenException;
 import gg.projecteden.exceptions.postconfigured.PlayerNotFoundException;
 import gg.projecteden.interfaces.PlayerOwnedObject;
@@ -199,6 +200,10 @@ public abstract class MongoService<T extends PlayerOwnedObject> {
 
 	public T get0() {
 		return get(StringUtils.getUUID0());
+	}
+
+	public T getApp() {
+		return get(EdenAPI.get().getAppUuid());
 	}
 
 	public void edit(String player, Consumer<T> consumer) {
