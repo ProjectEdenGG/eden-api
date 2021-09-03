@@ -17,8 +17,12 @@ public abstract class EdenAPI {
 		return instance;
 	}
 
+	public String getAppName() {
+		return getClass().getSimpleName();
+	}
+
 	public UUID getAppUuid() {
-		return UUID.nameUUIDFromBytes(getClass().getSimpleName().getBytes());
+		return UUID.nameUUIDFromBytes(getAppName().getBytes());
 	}
 
 	abstract public Env getEnv();

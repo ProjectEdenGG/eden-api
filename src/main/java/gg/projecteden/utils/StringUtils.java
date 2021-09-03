@@ -35,6 +35,10 @@ public class StringUtils {
 		return UUID0.equals(uuid);
 	}
 
+	public static boolean isAppUuid(UUID uuid) {
+		return EdenAPI.get().getAppUuid().equals(uuid);
+	}
+
 	public static String getDiscordPrefix(String prefix) {
 		return "**[" + prefix + "]** ";
 	}
@@ -143,12 +147,30 @@ public class StringUtils {
 		return uuid != null && uuid.matches(UUID_REGEX);
 	}
 
+	private static final int VERSION_CHAR = 14;
+
 	public static boolean isV4Uuid(UUID uuid) {
-		return isV4Uuid(uuid.toString());
+		return isUuidVersion(uuid, '4');
 	}
 
 	public static boolean isV4Uuid(String uuid) {
-		return uuid.charAt(14) == '4';
+		return isUuid(uuid) && isUuidVersion(uuid, '4');
+	}
+
+	public static boolean isV3Uuid(UUID uuid) {
+		return isUuidVersion(uuid, '3');
+	}
+
+	public static boolean isV3Uuid(String uuid) {
+		return isUuid(uuid) && isUuidVersion(uuid, '3');
+	}
+
+	public static boolean isUuidVersion(UUID uuid, char version) {
+		return isUuidVersion(uuid.toString(), version);
+	}
+
+	public static boolean isUuidVersion(String uuid, char version) {
+		return uuid.charAt(VERSION_CHAR) == version;
 	}
 
 	public static boolean isValidJson(String json) {

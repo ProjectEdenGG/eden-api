@@ -42,6 +42,7 @@ import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.regex.Pattern;
 
 import static com.mongodb.MongoClient.getDefaultCodecRegistry;
@@ -319,7 +320,7 @@ public abstract class MongoService<T extends PlayerOwnedObject> {
 	}
 
 	public void saveSync(T object) {
-		if (!StringUtils.isV4Uuid(object.getUuid()) && !object.getUuid().equals(StringUtils.getUUID0()))
+		if (!isUuidValid(object))
 			return;
 
 		beforeSave(object);
@@ -354,7 +355,7 @@ public abstract class MongoService<T extends PlayerOwnedObject> {
 	}
 
 	public void deleteSync(T object) {
-		if (!StringUtils.isV4Uuid(object.getUuid()) && !object.getUuid().equals(StringUtils.getUUID0()))
+		if (!isUuidValid(object))
 			return;
 
 		beforeDelete(object);
@@ -376,6 +377,15 @@ public abstract class MongoService<T extends PlayerOwnedObject> {
 			for (Document purchase : documents)
 				add(database.getMapper().fromDBObject(database, clazz, new BasicDBObject(purchase), null));
 		}};
+	}
+
+	private static final Function<UUID, Boolean> isV4 = StringUtils::isV4Uuid;
+	private static final Function<UUID, Boolean> is0 = StringUtils::isUUID0;
+	private static final Function<UUID, Boolean> isApp = StringUtils::isAppUuid;
+
+	private boolean isUuidValid(T object) {
+		final UUID uuid = object.getUuid();
+		return isV4.apply(uuid) || is0.apply(uuid) || isApp.apply(uuid);
 	}
 
 	/*

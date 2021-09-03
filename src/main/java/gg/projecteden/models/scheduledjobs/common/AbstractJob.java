@@ -45,7 +45,7 @@ public abstract class AbstractJob {
 	}
 
 	private ScheduledJobs jobs() {
-		return new ScheduledJobsService().get0();
+		return new ScheduledJobsService().getApp();
 	}
 
 	@Getter
