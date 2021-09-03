@@ -19,7 +19,6 @@ public class ScheduledJobsRunner {
 	private static final ScheduledJobs jobs = service.get(EdenAPI.get().getAppUuid());
 
 	public static void start() {
-		System.out.println("App UUID: " + EdenAPI.get().getAppUuid());
 		// static init
 	}
 

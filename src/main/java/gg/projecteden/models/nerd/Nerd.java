@@ -3,7 +3,6 @@ package gg.projecteden.models.nerd;
 import dev.morphia.annotations.Converters;
 import dev.morphia.annotations.Entity;
 import dev.morphia.annotations.Id;
-import gg.projecteden.exceptions.EdenException;
 import gg.projecteden.interfaces.PlayerOwnedObject;
 import gg.projecteden.mongodb.serializers.LocalDateConverter;
 import gg.projecteden.mongodb.serializers.LocalDateTimeConverter;
@@ -65,14 +64,8 @@ public class Nerd implements PlayerOwnedObject {
 	public @NotNull String getName() {
 		if (StringUtils.isUUID0(uuid))
 			return "Console";
-		if (name == null) {
-			try {
-				throw new EdenException("Stacktrace");
-			} catch (EdenException ex) {
-				ex.printStackTrace();
-			}
+		if (name == null)
 			return "api-" + getUuid();
-		}
 		return name;
 	}
 
