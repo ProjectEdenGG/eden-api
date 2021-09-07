@@ -37,7 +37,7 @@ public class EnumUtils {
 	}
 
 	public static <T> T random(Class<? extends T> clazz) {
-		return RandomUtils.randomElement((Object[]) clazz.getEnumConstants());
+		return RandomUtils.randomElement(clazz);
 	}
 
 	public static <T> List<String> valueNameList(Class<? extends T> clazz) {
