@@ -58,7 +58,7 @@ public class RandomUtils {
 	}
 
 	public static <T> T randomElement(Class<? extends T> clazz) {
-		return RandomUtils.randomElement(Arrays.stream(clazz.getEnumConstants()).collect(Collectors.toList()));
+		return EnumUtils.random(clazz);
 	}
 
 	private static <T> T randomElement(List<T> list) {
