@@ -57,6 +57,10 @@ public class RandomUtils {
 		return randomElement(new ArrayList<>(list));
 	}
 
+	public static <T> T randomElement(Class<? extends T> clazz) {
+		return RandomUtils.randomElement(Arrays.stream(clazz.getEnumConstants()).collect(Collectors.toList()));
+	}
+
 	private static <T> T randomElement(List<T> list) {
 		if (Utils.isNullOrEmpty(list)) return null;
 		return new ArrayList<>(list).get(random.nextInt(list.size()));
