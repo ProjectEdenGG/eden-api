@@ -47,6 +47,10 @@ public class StringUtils {
 		return string == null || string.trim().isEmpty();
 	}
 
+	public static boolean isNotNullOrEmpty(String string) {
+		return !isNullOrEmpty(string);
+	}
+
 	public static int countUpperCase(String s) {
 		return (int) s.codePoints().filter(c -> c >= 'A' && c <= 'Z').count();
 	}
