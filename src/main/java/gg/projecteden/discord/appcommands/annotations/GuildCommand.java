@@ -9,6 +9,7 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface GuildCommand {
 	String[] value() default {};
-	String[] exclude();
+
+	String[] exclude() default {};
 
 }
