@@ -43,10 +43,12 @@ public class StringUtils {
 		return "**[" + prefix + "]** ";
 	}
 
+	@Contract("null -> true")
 	public static boolean isNullOrEmpty(String string) {
 		return string == null || string.trim().isEmpty();
 	}
 
+	@Contract("null -> false")
 	public static boolean isNotNullOrEmpty(String string) {
 		return !isNullOrEmpty(string);
 	}
@@ -147,24 +149,29 @@ public class StringUtils {
 
 	public static final String UUID_REGEX = "[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}";
 
+	@Contract("null -> false")
 	public static boolean isUuid(String uuid) {
 		return uuid != null && uuid.matches(UUID_REGEX);
 	}
 
 	private static final int VERSION_CHAR = 14;
 
+	@Contract("null -> false")
 	public static boolean isV4Uuid(UUID uuid) {
 		return isUuidVersion(uuid, '4');
 	}
 
+	@Contract("null -> false")
 	public static boolean isV4Uuid(String uuid) {
 		return isUuid(uuid) && isUuidVersion(uuid, '4');
 	}
 
+	@Contract("null -> false")
 	public static boolean isV3Uuid(UUID uuid) {
 		return isUuidVersion(uuid, '3');
 	}
 
+	@Contract("null -> false")
 	public static boolean isV3Uuid(String uuid) {
 		return isUuid(uuid) && isUuidVersion(uuid, '3');
 	}
@@ -177,7 +184,11 @@ public class StringUtils {
 		return uuid.charAt(VERSION_CHAR) == version;
 	}
 
+	@Contract("null -> false")
 	public static boolean isValidJson(String json) {
+		if (json == null)
+			return false;
+
 		try {
 			new JSONObject(json);
 		} catch (JSONException ex) {
