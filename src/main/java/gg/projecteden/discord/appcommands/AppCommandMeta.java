@@ -191,7 +191,7 @@ public class AppCommandMeta<T extends AppCommand> {
 				if (required && (option == null || isNullOrEmpty(option.getAsString())))
 					throw new AppCommandException(name + " is required");
 
-				final Object object = convert(option);
+				final Object object = option == null ? null : convert(option);
 
 				if (required && object == null)
 					throw new AppCommandException(name + " is required");
@@ -200,6 +200,9 @@ public class AppCommandMeta<T extends AppCommand> {
 			}
 
 			public Object convert(OptionMapping option) {
+				if (option == null)
+					return null;
+
 				if (OPTION_CONVERTERS.containsKey(type))
 					return OPTION_CONVERTERS.get(type).apply(option);
 				else if (CONVERTERS.containsKey(type))
