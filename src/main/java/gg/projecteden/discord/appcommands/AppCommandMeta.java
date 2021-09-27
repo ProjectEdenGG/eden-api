@@ -188,7 +188,7 @@ public class AppCommandMeta<T extends AppCommand> {
 			public Object convert(Member member, OptionMapping option) {
 				checkRole(member, role);
 
-				if (required && option == null || isNullOrEmpty(option.getAsString()))
+				if (required && (option == null || isNullOrEmpty(option.getAsString())))
 					throw new AppCommandException(name + " is required");
 
 				final Object object = convert(option);

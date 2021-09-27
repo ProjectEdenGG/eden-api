@@ -47,6 +47,10 @@ public abstract class AppCommand {
 		return event.getEvent().reply(message).submit();
 	}
 
+	protected CompletableFuture<InteractionHook> reply(MessageBuilder message) {
+		return event.getEvent().reply(message.build()).submit();
+	}
+
 	protected CompletableFuture<InteractionHook> reply(EmbedBuilder message) {
 		return event.getEvent().reply(new MessageBuilder().setEmbeds(message.build()).build()).submit();
 	}
