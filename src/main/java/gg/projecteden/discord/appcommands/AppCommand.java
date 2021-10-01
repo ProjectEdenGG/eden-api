@@ -55,6 +55,10 @@ public abstract class AppCommand {
 		return event.getEvent().reply(new MessageBuilder().setEmbeds(message.build()).build()).submit();
 	}
 
+	protected CompletableFuture<InteractionHook> replyEphemeral(String message) {
+		return event.getEvent().deferReply(true).setContent(message).submit();
+	}
+
 	protected CompletableFuture<InteractionHook> thumbsup() {
 		return reply(":thumbsup:");
 	}
