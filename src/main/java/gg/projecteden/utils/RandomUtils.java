@@ -18,6 +18,9 @@ public class RandomUtils {
 	}
 
 	public static boolean chanceOf(double chance) {
+		if(chance <= 0.0)
+			return false;
+
 		return randomDouble(0, 100) <= chance;
 	}
 
