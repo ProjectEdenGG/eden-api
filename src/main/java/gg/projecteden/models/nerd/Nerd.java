@@ -40,6 +40,8 @@ public class Nerd implements PlayerOwnedObject {
 	protected LocalDateTime firstJoin;
 	protected LocalDateTime lastJoin;
 	protected LocalDateTime lastQuit;
+	protected LocalDateTime lastUnvanish;
+	protected LocalDateTime lastVanish;
 	protected LocalDate promotionDate;
 	protected String about;
 	protected boolean meetMeVideo;
