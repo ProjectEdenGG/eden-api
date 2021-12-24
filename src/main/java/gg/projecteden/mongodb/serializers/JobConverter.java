@@ -7,7 +7,7 @@ import dev.morphia.converters.TypeConverter;
 import dev.morphia.mapping.MappedField;
 import dev.morphia.mapping.Mapper;
 import gg.projecteden.models.scheduledjobs.common.AbstractJob;
-import gg.projecteden.mongodb.MongoService;
+import gg.projecteden.mongodb.MongoPlayerService;
 import lombok.SneakyThrows;
 
 public class JobConverter extends TypeConverter implements SimpleValueConverter {
@@ -20,7 +20,7 @@ public class JobConverter extends TypeConverter implements SimpleValueConverter 
 	@SneakyThrows
 	public Object encode(Object value, MappedField optionalExtraInfo) {
 		if (value == null) return null;
-		final DBObject dbObject = MongoService.serialize(value);
+		final DBObject dbObject = MongoPlayerService.serialize(value);
 		dbObject.put("className", value.getClass().getName());
 		return dbObject;
 	}
@@ -29,7 +29,7 @@ public class JobConverter extends TypeConverter implements SimpleValueConverter 
 	@SneakyThrows
 	public Object decode(Class<?> aClass, Object value, MappedField mappedField) {
 		if (value == null) return null;
-		return MongoService.deserialize((BasicDBObject) value);
+		return MongoPlayerService.deserialize((BasicDBObject) value);
 	}
 
 }

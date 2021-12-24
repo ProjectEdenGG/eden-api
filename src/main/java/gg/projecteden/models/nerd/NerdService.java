@@ -5,8 +5,8 @@ import gg.projecteden.exceptions.EdenException;
 import gg.projecteden.models.hours.HoursService;
 import gg.projecteden.models.nickname.Nickname;
 import gg.projecteden.models.nickname.NicknameService;
-import gg.projecteden.mongodb.MongoService;
-import gg.projecteden.mongodb.annotations.PlayerClass;
+import gg.projecteden.mongodb.MongoPlayerService;
+import gg.projecteden.mongodb.annotations.ObjectClass;
 import gg.projecteden.utils.Utils;
 
 import java.util.ArrayList;
@@ -15,8 +15,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-@PlayerClass(Nerd.class)
-public class NerdService extends MongoService<Nerd> {
+@ObjectClass(Nerd.class)
+public class NerdService extends MongoPlayerService<Nerd> {
 	private final static Map<UUID, Nerd> cache = new HashMap<>();
 
 	public Map<UUID, Nerd> getCache() {
@@ -25,7 +25,7 @@ public class NerdService extends MongoService<Nerd> {
 
 	public List<Nerd> find(String partialName) {
 		Query<Nerd> query = database.createQuery(Nerd.class);
-		query.and(query.criteria("pastNames").containsIgnoreCase(sanitize(partialName)));
+		query.and(query.criteria("pastNames").containsIgnoreCase(partialName));
 		if (query.count() > 50)
 			throw new EdenException("Too many name matches for &e" + partialName + " &c(" + query.count() + ")");
 
@@ -59,7 +59,7 @@ public class NerdService extends MongoService<Nerd> {
 	}
 
 	public Nerd getFromAlias(String alias) {
-		return database.createQuery(Nerd.class).filter("aliases", sanitize(alias)).find().tryNext();
+		return database.createQuery(Nerd.class).filter("aliases", alias).find().tryNext();
 	}
 
 }

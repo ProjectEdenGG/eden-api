@@ -6,8 +6,8 @@ import com.mongodb.client.model.Sorts;
 import dev.morphia.annotations.Id;
 import dev.morphia.query.Query;
 import gg.projecteden.interfaces.PlayerOwnedObject;
-import gg.projecteden.mongodb.MongoService;
-import gg.projecteden.mongodb.annotations.PlayerClass;
+import gg.projecteden.mongodb.MongoPlayerService;
+import gg.projecteden.mongodb.annotations.ObjectClass;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NonNull;
@@ -24,8 +24,8 @@ import java.util.UUID;
 import static com.mongodb.client.model.Aggregates.match;
 import static com.mongodb.client.model.Filters.eq;
 
-@PlayerClass(Punishments.class)
-public class PunishmentsService extends MongoService<Punishments> {
+@ObjectClass(Punishments.class)
+public class PunishmentsService extends MongoPlayerService<Punishments> {
 	private final static Map<UUID, Punishments> cache = new HashMap<>();
 
 	public Map<UUID, Punishments> getCache() {
