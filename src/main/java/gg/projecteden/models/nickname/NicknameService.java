@@ -1,15 +1,15 @@
 package gg.projecteden.models.nickname;
 
 import dev.morphia.query.Query;
-import gg.projecteden.mongodb.MongoService;
-import gg.projecteden.mongodb.annotations.PlayerClass;
+import gg.projecteden.mongodb.MongoPlayerService;
+import gg.projecteden.mongodb.annotations.ObjectClass;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-@PlayerClass(Nickname.class)
-public class NicknameService extends MongoService<Nickname> {
+@ObjectClass(Nickname.class)
+public class NicknameService extends MongoPlayerService<Nickname> {
 	private final static Map<UUID, Nickname> cache = new HashMap<>();
 
 	public Map<UUID, Nickname> getCache() {
@@ -25,7 +25,7 @@ public class NicknameService extends MongoService<Nickname> {
 	}
 
 	public Nickname getFromQueueId(String queueId) {
-		Nickname data = database.createQuery(Nickname.class).filter("nicknameHistory.nicknameQueueId", sanitize(queueId)).find().tryNext();
+		Nickname data = database.createQuery(Nickname.class).filter("nicknameHistory.nicknameQueueId", queueId).find().tryNext();
 		cache(data);
 		return data;
 	}

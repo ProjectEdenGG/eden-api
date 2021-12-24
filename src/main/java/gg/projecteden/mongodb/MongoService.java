@@ -11,11 +11,8 @@ import dev.morphia.query.Sort;
 import dev.morphia.query.UpdateException;
 import gg.projecteden.EdenAPI;
 import gg.projecteden.exceptions.EdenException;
-import gg.projecteden.exceptions.postconfigured.PlayerNotFoundException;
-import gg.projecteden.interfaces.PlayerOwnedObject;
-import gg.projecteden.models.nerd.Nerd;
-import gg.projecteden.models.nerd.NerdService;
-import gg.projecteden.mongodb.annotations.PlayerClass;
+import gg.projecteden.interfaces.DatabaseObject;
+import gg.projecteden.mongodb.annotations.ObjectClass;
 import gg.projecteden.utils.Log;
 import gg.projecteden.utils.StringUtils;
 import lombok.Getter;
@@ -42,21 +39,19 @@ import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.regex.Pattern;
 
 import static com.mongodb.MongoClient.getDefaultCodecRegistry;
 
-public abstract class MongoService<T extends PlayerOwnedObject> {
+public abstract class MongoService<T extends DatabaseObject> {
 	protected static Datastore database;
 	protected static String _id = "_id";
 
 	@Getter
 	private static final Set<Class<? extends MongoService>> services = new Reflections("eden.models").getSubTypesOf(MongoService.class);
 	@Getter
-	private static final Map<Class<? extends PlayerOwnedObject>, Class<? extends MongoService>> objectToServiceMap = new HashMap<>();
+	private static final Map<Class<? extends DatabaseObject>, Class<? extends MongoService>> objectToServiceMap = new HashMap<>();
 	@Getter
-	private static final Map<Class<? extends MongoService>, Class<? extends PlayerOwnedObject>> serviceToObjectMap = new HashMap<>();
+	private static final Map<Class<? extends MongoService>, Class<? extends DatabaseObject>> serviceToObjectMap = new HashMap<>();
 
 	static {
 		loadServices();
@@ -80,9 +75,9 @@ public abstract class MongoService<T extends PlayerOwnedObject> {
 			if (Modifier.isAbstract(service.getModifiers()))
 				continue;
 
-			PlayerClass annotation = service.getAnnotation(PlayerClass.class);
+			ObjectClass annotation = service.getAnnotation(ObjectClass.class);
 			if (annotation == null) {
-				Log.warn(service.getSimpleName() + " does not have @PlayerClass annotation");
+				Log.warn(service.getSimpleName() + " does not have @" + ObjectClass.class.getSimpleName() + " annotation");
 				continue;
 			}
 
@@ -91,25 +86,25 @@ public abstract class MongoService<T extends PlayerOwnedObject> {
 		}
 	}
 
-	protected Class<T> getPlayerClass() {
-		PlayerClass annotation = getClass().getAnnotation(PlayerClass.class);
+	protected Class<T> getObjectClass() {
+		ObjectClass annotation = getClass().getAnnotation(ObjectClass.class);
 		return annotation == null ? null : (Class<T>) annotation.value();
 	}
 
-	public static Class<? extends PlayerOwnedObject> ofService(MongoService mongoService) {
+	public static Class<? extends DatabaseObject> ofService(MongoService mongoService) {
 		return ofService(mongoService.getClass());
 	}
 
-	public static Class<? extends PlayerOwnedObject> ofService(Class<? extends MongoService> mongoService) {
+	public static Class<? extends DatabaseObject> ofService(Class<? extends MongoService> mongoService) {
 		return serviceToObjectMap.get(mongoService);
 	}
 
-	public static Class<? extends MongoService> ofObject(PlayerOwnedObject playerOwnedObject) {
-		return ofObject(playerOwnedObject.getClass());
+	public static Class<? extends MongoService> ofObject(DatabaseObject object) {
+		return ofObject(object.getClass());
 	}
 
-	public static Class<? extends MongoService> ofObject(Class<? extends PlayerOwnedObject> playerOwnedObject) {
-		return objectToServiceMap.get(playerOwnedObject);
+	public static Class<? extends MongoService> ofObject(Class<? extends DatabaseObject> object) {
+		return objectToServiceMap.get(object);
 	}
 
 	static {
@@ -128,7 +123,7 @@ public abstract class MongoService<T extends PlayerOwnedObject> {
 	}
 
 	public MongoCollection<Document> getCollection() {
-		return database.getDatabase().getCollection(getPlayerClass().getAnnotation(Entity.class).value());
+		return database.getDatabase().getCollection(getObjectClass().getAnnotation(Entity.class).value());
 	}
 
 	public abstract Map<UUID, T> getCache();
@@ -138,7 +133,7 @@ public abstract class MongoService<T extends PlayerOwnedObject> {
 	}
 
 	public Collection<T> cacheAll() {
-		database.createQuery(getPlayerClass()).find().forEachRemaining(this::cache);
+		database.createQuery(getObjectClass()).find().forEachRemaining(this::cache);
 		return getCache().values();
 	}
 
@@ -149,6 +144,11 @@ public abstract class MongoService<T extends PlayerOwnedObject> {
 
 	public boolean isCached(T object) {
 		return getCache().containsKey(object.getUuid());
+	}
+
+	public void add(T object) {
+		cache(object);
+		save(object);
 	}
 
 	public void saveCache() {
@@ -166,8 +166,8 @@ public abstract class MongoService<T extends PlayerOwnedObject> {
 	public void saveCacheSync(int threadCount) {
 		ExecutorService executor = Executors.newFixedThreadPool(threadCount);
 
-		for (T player : new ArrayList<>(getCache().values()))
-			executor.submit(() -> saveSync(player));
+		for (T object : new ArrayList<>(getCache().values()))
+			executor.submit(() -> saveSync(object));
 	}
 
 	private static final JsonWriterSettings jsonWriterSettings = JsonWriterSettings.builder().indent(true).build();
@@ -181,14 +181,11 @@ public abstract class MongoService<T extends PlayerOwnedObject> {
 	}
 
 	public T get(String name) {
-		Nerd nerd = new NerdService().findExact(name);
-		if (nerd == null)
-			throw new PlayerNotFoundException(name);
-		return get(nerd);
+		return get(UUID.fromString(name));
 	}
 
-	public T get(HasUniqueId player) {
-		return get(player.getUniqueId());
+	public T get(HasUniqueId object) {
+		return get(object.getUniqueId());
 	}
 
 	@NotNull
@@ -207,17 +204,16 @@ public abstract class MongoService<T extends PlayerOwnedObject> {
 		return get(EdenAPI.get().getAppUuid());
 	}
 
-	public void edit(String player, Consumer<T> consumer) {
-		edit(get(player), consumer);
-
+	public void edit(String uuid, Consumer<T> consumer) {
+		edit(get(uuid), consumer);
 	}
 
-	public void edit(HasUniqueId player, Consumer<T> consumer) {
-		edit(get(player), consumer);
+	public void edit(HasUniqueId uuid, Consumer<T> consumer) {
+		edit(get(uuid), consumer);
 	}
 
-	public void edit(UUID player, Consumer<T> consumer) {
-		edit(get(player), consumer);
+	public void edit(UUID uuid, Consumer<T> consumer) {
+		edit(get(uuid), consumer);
 	}
 
 	public void edit(T object, Consumer<T> consumer) {
@@ -239,10 +235,10 @@ public abstract class MongoService<T extends PlayerOwnedObject> {
 	}
 
 	private void checkType(T object) {
-		if (getPlayerClass() == null) return;
-		if (!object.getClass().isAssignableFrom(getPlayerClass()))
+		if (getObjectClass() == null) return;
+		if (!object.getClass().isAssignableFrom(getObjectClass()))
 			throw new EdenException(this.getClass().getSimpleName() + " received wrong class type, expected "
-					+ getPlayerClass().getSimpleName() + ", found " + object.getClass().getSimpleName());
+					+ getObjectClass().getSimpleName() + ", found " + object.getClass().getSimpleName());
 	}
 
 	public void delete(T object) {
@@ -254,32 +250,26 @@ public abstract class MongoService<T extends PlayerOwnedObject> {
 		deleteAllSync();
 	}
 
-	protected String sanitize(String input) {
-		if (Pattern.compile("[\\w\\d\\s]+").matcher(input).matches())
-			return input;
-		throw new EdenException("Unsafe argument");
-	}
-
 	@NotNull
 	protected T getCache(UUID uuid) {
-		Validate.notNull(getPlayerClass(), "You must provide a player owned class or override get(UUID)");
+		Validate.notNull(getObjectClass(), "You must provide an owning class or override get(UUID)");
 		if (getCache().containsKey(uuid) && getCache().get(uuid) == null)
 			getCache().remove(uuid);
 		return getCache().computeIfAbsent(uuid, $ -> getNoCache(uuid));
 	}
 
 	protected T getNoCache(UUID uuid) {
-		T object = database.createQuery(getPlayerClass()).field(_id).equal(uuid).first();
+		T object = database.createQuery(getObjectClass()).field(_id).equal(uuid).first();
 		if (object == null)
-			object = createPlayerObject(uuid);
+			object = createObject(uuid);
 		if (object == null)
-			Log.log("New instance of " + getPlayerClass().getSimpleName() + " is null");
+			Log.log("New instance of " + getObjectClass().getSimpleName() + " is null");
 		return object;
 	}
 
-	protected T createPlayerObject(UUID uuid) {
+	protected T createObject(UUID uuid) {
 		try {
-			Constructor<? extends PlayerOwnedObject> constructor = getPlayerClass().getDeclaredConstructor(UUID.class);
+			Constructor<? extends DatabaseObject> constructor = getObjectClass().getDeclaredConstructor(UUID.class);
 			constructor.setAccessible(true);
 			return (T) constructor.newInstance(uuid);
 		} catch (NoSuchMethodException | IllegalAccessException | InstantiationException | InvocationTargetException ex) {
@@ -289,25 +279,25 @@ public abstract class MongoService<T extends PlayerOwnedObject> {
 	}
 
 	public List<T> getPage(int page, int amount) {
-		return database.createQuery(getPlayerClass()).offset((page - 1) * amount).limit(amount).find().toList();
+		return database.createQuery(getObjectClass()).offset((page - 1) * amount).limit(amount).find().toList();
 	}
 
 	public List<T> getAll() {
-		return database.createQuery(getPlayerClass()).find().toList();
+		return database.createQuery(getObjectClass()).find().toList();
 	}
 
 	public List<T> getAllLimit(int limit) {
-		return database.createQuery(getPlayerClass()).limit(limit).find().toList();
+		return database.createQuery(getObjectClass()).limit(limit).find().toList();
 	}
 
 	public List<T> getAllSortedBy(Sort... sorts) {
-		return database.createQuery(getPlayerClass())
+		return database.createQuery(getObjectClass())
 				.order(sorts)
 				.find().toList();
 	}
 
 	public List<T> getAllSortedByLimit(int limit, Sort... sorts) {
-		return database.createQuery(getPlayerClass())
+		return database.createQuery(getObjectClass())
 				.order(sorts)
 				.limit(limit)
 				.find().toList();
@@ -324,9 +314,6 @@ public abstract class MongoService<T extends PlayerOwnedObject> {
 	}
 
 	public void saveSync(T object) {
-		if (!isUuidValid(object))
-			return;
-
 		beforeSave(object);
 
 		if (deleteIf(object)) {
@@ -359,9 +346,6 @@ public abstract class MongoService<T extends PlayerOwnedObject> {
 	}
 
 	public void deleteSync(T object) {
-		if (!isUuidValid(object))
-			return;
-
 		beforeDelete(object);
 
 		getCache().remove(object.getUuid());
@@ -371,7 +355,7 @@ public abstract class MongoService<T extends PlayerOwnedObject> {
 	}
 
 	public void deleteAllSync() {
-		database.getCollection(getPlayerClass()).drop();
+		database.getCollection(getObjectClass()).drop();
 		clearCache();
 	}
 
@@ -383,28 +367,4 @@ public abstract class MongoService<T extends PlayerOwnedObject> {
 		}};
 	}
 
-	private static final Function<UUID, Boolean> isV4 = StringUtils::isV4Uuid;
-	private static final Function<UUID, Boolean> is0 = StringUtils::isUUID0;
-	private static final Function<UUID, Boolean> isApp = StringUtils::isAppUuid;
-
-	private boolean isUuidValid(T object) {
-		final UUID uuid = object.getUuid();
-		return isV4.apply(uuid) || is0.apply(uuid) || isApp.apply(uuid);
-	}
-
-	/*
-	public void log(String name) {
-		try {
-			try {
-				throw new BNException("Stacktrace");
-			} catch (BNException ex) {
-				StringWriter sw = new StringWriter();
-				ex.printStackTrace(new PrintWriter(sw));
-				Nexus.fileLogSync("pugmas-db-debug", "[Primary thread: " + Bukkit.isPrimaryThread() + "] MongoDB Pugmas20 " + name + "\n" + sw.toString() + "\n");
-			}
-		} catch (Exception ex) {
-			ex.printStackTrace();
-		}
-	}
-	*/
 }

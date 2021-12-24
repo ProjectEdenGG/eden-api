@@ -10,17 +10,19 @@ import org.jetbrains.annotations.NotNull;
 import java.util.UUID;
 
 /**
- * A mongo database object owned by a player
+ * An object owned by a player, usually for Mongo
  */
-public interface PlayerOwnedObject extends Nicknamed, HasUniqueId {
+public interface PlayerOwnedObject extends DatabaseObject, Nicknamed, HasUniqueId {
 
 	@NotNull UUID getUuid();
 
 	/**
 	 * Gets the unique ID of this object. Alias for {@link #getUuid()}, for compatibility with {@link HasUniqueId}.
+	 *
 	 * @return this object's unique ID
 	 */
-	@Override @NotNull
+	@Override
+	@NotNull
 	default UUID getUniqueId() {
 		return getUuid();
 	}

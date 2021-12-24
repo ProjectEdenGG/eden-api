@@ -8,8 +8,8 @@ import com.mongodb.client.model.Sorts;
 import dev.morphia.annotations.Id;
 import gg.projecteden.exceptions.EdenException;
 import gg.projecteden.interfaces.PlayerOwnedObject;
-import gg.projecteden.mongodb.MongoService;
-import gg.projecteden.mongodb.annotations.PlayerClass;
+import gg.projecteden.mongodb.MongoPlayerService;
+import gg.projecteden.mongodb.annotations.ObjectClass;
 import gg.projecteden.utils.StringUtils;
 import gg.projecteden.utils.Utils;
 import lombok.AllArgsConstructor;
@@ -41,8 +41,8 @@ import static com.mongodb.client.model.Aggregates.unwind;
 import static com.mongodb.client.model.Filters.regex;
 import static com.mongodb.client.model.Projections.computed;
 
-@PlayerClass(Hours.class)
-public class HoursService extends MongoService<Hours> {
+@ObjectClass(Hours.class)
+public class HoursService extends MongoPlayerService<Hours> {
 	private final static Map<UUID, Hours> cache = new HashMap<>();
 
 	public Map<UUID, Hours> getCache() {
@@ -50,9 +50,9 @@ public class HoursService extends MongoService<Hours> {
 	}
 
 	protected Hours getNoCache(UUID uuid) {
-		Hours hours = database.createQuery(getPlayerClass()).field(_id).equal(uuid).first();
+		Hours hours = database.createQuery(getObjectClass()).field(_id).equal(uuid).first();
 		if (hours == null) {
-			hours = createPlayerObject(uuid);
+			hours = createObject(uuid);
 			save(hours);
 		}
 		return hours;
