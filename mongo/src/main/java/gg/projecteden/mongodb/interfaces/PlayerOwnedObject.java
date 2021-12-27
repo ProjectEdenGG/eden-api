@@ -1,7 +1,7 @@
 package gg.projecteden.mongodb.interfaces;
 
-import gg.projecteden.common.HasUniqueId;
 import gg.projecteden.interfaces.DatabaseObject;
+import gg.projecteden.interfaces.HasUniqueId;
 import gg.projecteden.interfaces.Nicknamed;
 import gg.projecteden.mongodb.models.nerd.Nerd;
 import gg.projecteden.mongodb.models.nickname.Nickname;

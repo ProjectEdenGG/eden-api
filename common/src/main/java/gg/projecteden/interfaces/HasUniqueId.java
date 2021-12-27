@@ -1,4 +1,4 @@
-package gg.projecteden.common;
+package gg.projecteden.interfaces;
 
 import org.jetbrains.annotations.NotNull;
 

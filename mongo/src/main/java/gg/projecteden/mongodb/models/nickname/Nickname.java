@@ -3,7 +3,7 @@ package gg.projecteden.mongodb.models.nickname;
 import dev.morphia.annotations.Converters;
 import dev.morphia.annotations.Entity;
 import dev.morphia.annotations.Id;
-import gg.projecteden.common.HasUniqueId;
+import gg.projecteden.interfaces.HasUniqueId;
 import gg.projecteden.mongodb.interfaces.PlayerOwnedObject;
 import gg.projecteden.mongodb.serializers.UUIDConverter;
 import gg.projecteden.utils.StringUtils;

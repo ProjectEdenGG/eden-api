@@ -1,6 +1,5 @@
 package gg.projecteden.interfaces;
 
-import gg.projecteden.common.HasUniqueId;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.UUID;
