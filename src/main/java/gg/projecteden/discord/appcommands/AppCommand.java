@@ -15,52 +15,56 @@ import java.util.concurrent.CompletableFuture;
 public abstract class AppCommand {
 	protected final AppCommandEvent event;
 
-	protected Member member() {
+	public Member member() {
 		return event.getEvent().getMember();
 	}
 
-	protected String name() {
+	public String name() {
 		return member().getEffectiveName();
 	}
 
-	protected String mention() {
+	public String mention() {
 		return member().getAsMention();
 	}
 
-	protected Guild guild() {
+	public Guild guild() {
 		return event.getEvent().getGuild();
 	}
 
-	protected TextChannel channel() {
+	public TextChannel channel() {
 		return event.getEvent().getTextChannel();
 	}
 
-	protected Category category() {
-		return channel().getParent();
+	public Category category() {
+		return channel().getParentCategory();
 	}
 
-	protected Category category(String name) {
+	public Category category(String name) {
 		return guild().getCategoriesByName(name, true).iterator().next();
 	}
 
-	protected CompletableFuture<InteractionHook> reply(String message) {
+	public CompletableFuture<InteractionHook> reply(String message) {
 		return event.getEvent().reply(message).submit();
 	}
 
-	protected CompletableFuture<InteractionHook> reply(MessageBuilder message) {
+	public CompletableFuture<InteractionHook> reply(MessageBuilder message) {
 		return event.getEvent().reply(message.build()).submit();
 	}
 
-	protected CompletableFuture<InteractionHook> reply(EmbedBuilder message) {
+	public CompletableFuture<InteractionHook> reply(EmbedBuilder message) {
 		return event.getEvent().reply(new MessageBuilder().setEmbeds(message.build()).build()).submit();
 	}
 
-	protected CompletableFuture<InteractionHook> replyEphemeral(String message) {
+	public CompletableFuture<InteractionHook> replyEphemeral(String message) {
 		return event.getEvent().deferReply(true).setContent(message).submit();
 	}
 
-	protected CompletableFuture<InteractionHook> thumbsup() {
+	public CompletableFuture<InteractionHook> thumbsup() {
 		return reply(":thumbsup:");
+	}
+
+	public CompletableFuture<InteractionHook> thumbsupEphemeral() {
+		return replyEphemeral(":thumbsup:");
 	}
 
 }

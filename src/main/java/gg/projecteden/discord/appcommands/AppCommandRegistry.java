@@ -1,6 +1,11 @@
 package gg.projecteden.discord.appcommands;
 
+import gg.projecteden.discord.appcommands.AppCommandMeta.AppCommandMethod.AppCommandArgument;
+import gg.projecteden.discord.appcommands.exceptions.AppCommandException;
 import gg.projecteden.utils.Utils;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NonNull;
 import lombok.SneakyThrows;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.Guild;
@@ -16,25 +21,33 @@ import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.privileges.CommandPrivilege;
 import net.dv8tion.jda.api.interactions.commands.privileges.CommandPrivilege.Type;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.reflections.Reflections;
 
+import java.lang.annotation.Annotation;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 import static gg.projecteden.discord.appcommands.AppCommandHandler.parseMentions;
+import static gg.projecteden.utils.StringUtils.isNullOrEmpty;
 
 public record AppCommandRegistry(JDA jda, String packageName) {
 	static final Map<String, AppCommandMeta<?>> COMMANDS = new HashMap<>();
 	static final Map<Class<?>, Function<OptionMapping, Object>> OPTION_CONVERTERS = new HashMap<>();
-	static final Map<Class<?>, Function<String, Object>> CONVERTERS = new HashMap<>();
+	static final Map<Class<?>, Function<AppCommandArgumentInstance, Object>> CONVERTERS = new HashMap<>();
 	static final Map<Class<?>, Supplier<List<Choice>>> CHOICES = new HashMap<>();
 	static final Map<Class<?>, List<Choice>> CHOICES_CACHE = new HashMap<>();
 	static final Map<Class<?>, OptionType> OPTION_TYPE_MAP = new HashMap<>();
+	static final Map<Class<? extends Annotation>, BiConsumer<AppCommand, Annotation>> ANNOTATION_HANDLERS = new HashMap<>();
 
 	@SneakyThrows
 	public void registerAll() {
@@ -171,13 +184,24 @@ public record AppCommandRegistry(JDA jda, String packageName) {
 			OPTION_CONVERTERS.put(clazz, converter);
 	}
 
-	public static void registerConverter(Class<?> clazz, Function<String, Object> converter) {
+	public static void registerConverter(Class<?> clazz, Function<AppCommandArgumentInstance, Object> converter) {
 		registerConverter(List.of(clazz), converter);
 	}
 
-	public static void registerConverter(List<Class<?>> classes, Function<String, Object> converter) {
+	public static void registerConverter(List<Class<?>> classes, Function<AppCommandArgumentInstance, Object> converter) {
 		for (Class<?> clazz : classes)
 			CONVERTERS.put(clazz, converter);
+	}
+
+	@Data
+	@AllArgsConstructor
+	public static class AppCommandArgumentInstance {
+		private String input;
+		@NonNull
+		private AppCommand command;
+		@NonNull
+		private AppCommandArgument meta;
+
 	}
 
 	static OptionType resolveOptionType(Class<?> type) {
@@ -189,7 +213,27 @@ public record AppCommandRegistry(JDA jda, String packageName) {
 	}
 
 	static List<Choice> loadChoices(Class<?> clazz) {
-		return CHOICES_CACHE.computeIfAbsent(clazz, $ -> CHOICES.getOrDefault(clazz, Collections::emptyList).get());
+		return CHOICES_CACHE.computeIfAbsent(clazz, $ -> CHOICES.getOrDefault(clazz, () -> {
+			if (clazz.isEnum())
+				return loadEnumChoices((Class<? extends Enum<?>>) clazz, defaultEnumChoicesFormatter());
+			return Collections.emptyList();
+		}).get());
+	}
+
+	private static <T extends Enum<?>> Function<T, String> defaultEnumChoicesFormatter() {
+		return value -> value.name().toLowerCase().replaceAll(" ", "_");
+	}
+
+	@NotNull
+	public static <T extends Enum<?>> List<Choice> loadEnumChoices(Class<? extends T> clazz, Function<T, String> formatter) {
+		return Arrays.stream(clazz.getEnumConstants())
+				.map(formatter)
+				.map(value -> new Choice(value, value))
+				.collect(Collectors.toList());
+	}
+
+	public static void registerAnnotationHandler(Class<? extends Annotation> annotation, BiConsumer<AppCommand, Annotation> consumer) {
+		ANNOTATION_HANDLERS.put(annotation, consumer);
 	}
 
 	static {
@@ -215,6 +259,24 @@ public record AppCommandRegistry(JDA jda, String packageName) {
 		registerOptionConverter(GuildChannel.class, OptionMapping::getAsGuildChannel);
 		registerOptionConverter(MessageChannel.class, OptionMapping::getAsMessageChannel);
 		registerOptionConverter(IMentionable.class, OptionMapping::getAsMentionable);
+
+		registerConverter(Enum.class, argument -> {
+			final String input = argument.getInput();
+			final Class<?> type = argument.getMeta().getType();
+
+			return convertToEnum((Class<? extends Enum<?>>) type, input);
+		});
+	}
+
+	@Nullable
+	public static <T extends Enum<?>> T convertToEnum(Class<T> type, String input) {
+		if (isNullOrEmpty(input))
+			return null;
+
+		return Arrays.stream(type.getEnumConstants())
+				.filter(constant -> constant.name().equalsIgnoreCase(input))
+				.findFirst()
+				.orElseThrow(() -> new AppCommandException(type.getSimpleName() + " from `" + input + "` not found"));
 	}
 
 }
