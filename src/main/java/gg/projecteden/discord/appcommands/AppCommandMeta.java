@@ -39,7 +39,6 @@ import java.util.stream.Stream;
 
 import static gg.projecteden.discord.appcommands.AppCommandRegistry.ANNOTATION_HANDLERS;
 import static gg.projecteden.discord.appcommands.AppCommandRegistry.COMMANDS;
-import static gg.projecteden.discord.appcommands.AppCommandRegistry.CONVERTERS;
 import static gg.projecteden.discord.appcommands.AppCommandRegistry.OPTION_CONVERTERS;
 import static gg.projecteden.discord.appcommands.AppCommandRegistry.loadChoices;
 import static gg.projecteden.discord.appcommands.AppCommandRegistry.resolveOptionType;
@@ -62,10 +61,10 @@ public class AppCommandMeta<C extends AppCommand> {
 	public AppCommandMeta(Class<C> clazz) {
 		this.name = replaceLast(clazz.getSimpleName(), AppCommand.class.getSimpleName(), "").toLowerCase();
 		this.clazz = clazz;
-		this.role = defaultRole(getAnnotation(RequiredRole.class));
+		this.role = defaultRole(getAnnotation(clazz, RequiredRole.class));
 		this.command = new CommandData(name, requireDescription(clazz));
 
-		GuildCommand guildAnnotation = getAnnotation(GuildCommand.class);
+		GuildCommand guildAnnotation = getAnnotation(clazz, GuildCommand.class);
 		if (guildAnnotation == null) {
 			this.guildCommand = false;
 			this.includedGuilds = Collections.emptyList();
@@ -80,7 +79,7 @@ public class AppCommandMeta<C extends AppCommand> {
 
 		this.methods = new HashMap<>() {{
 			new HashMap<String, Method>() {{
-				getAllMethods(getClass(), withAnnotation(Command.class)).forEach(method -> {
+				getAllMethods(clazz, withAnnotation(Command.class)).forEach(method -> {
 					String key = method.getName() + "(" + Arrays.stream(method.getParameterTypes()).map(Class::getName).collect(Collectors.joining(",")) + ")";
 					if (!containsKey(key))
 						put(key, method);
@@ -89,20 +88,12 @@ public class AppCommandMeta<C extends AppCommand> {
 				});
 			}}.values().forEach(method -> {
 				method.setAccessible(true);
-				put(name + "/" + method.getName().replaceAll("_", "/"), new AppCommandMethod(method));
+				final AppCommandMethod methodMeta = new AppCommandMethod(method);
+				put(name + methodMeta.getPath(), methodMeta);
 			});
 		}};
-	}
 
-	@Nullable
-	private <A extends Annotation> A getAnnotation(Class<A> clazz) {
-		A annotation = null;
-		for (var superclass : Utils.getSuperclasses(this.clazz)) {
-			annotation = superclass.getAnnotation(clazz);
-			if (annotation != null)
-				break;
-		}
-		return annotation;
+		System.out.println(name + ": " + methods);
 	}
 
 	private void init() {
@@ -196,21 +187,28 @@ public class AppCommandMeta<C extends AppCommand> {
 			private final OptionType optionType;
 
 			public AppCommandArgument(Parameter parameter) {
+				final Default defaultAnnotation = parameter.getAnnotation(Default.class);
+				final Choices choicesAnnotation = parameter.getAnnotation(Choices.class);
+				final Optional optionalAnnotation = parameter.getAnnotation(Optional.class);
+				final RequiredRole roleAnnotation = parameter.getAnnotation(RequiredRole.class);
+
 				this.parameter = parameter;
 				this.name = parameter.getName();
 				this.description = defaultDescription(parameter);
-				this.defaultValue = defaultValue(parameter.getAnnotation(Default.class));
-				this.role = defaultRole(parameter.getAnnotation(RequiredRole.class));
+				this.defaultValue = defaultValue(defaultAnnotation);
+				this.role = defaultRole(roleAnnotation);
 				this.type = parameter.getType();
-				final Choices choicesAnnotation = parameter.getAnnotation(Choices.class);
 				this.choices = choicesAnnotation == null ? type : choicesAnnotation.value();
-				this.required = parameter.getAnnotation(Optional.class) == null;
+				this.required = optionalAnnotation == null && isNullOrEmpty(defaultValue);
 				this.optionType = resolveOptionType(this.type);
 			}
 
 			protected OptionData asOption() {
-				if (!OPTION_CONVERTERS.containsKey(type) && !CONVERTERS.containsKey(type))
-					throw new AppCommandMisconfiguredException("No converter for " + type.getSimpleName() + " registered");
+				if (!OPTION_CONVERTERS.containsKey(type)) {
+					var converter = AppCommandRegistry.getConverter(type);
+					if (converter == null)
+						throw new AppCommandMisconfiguredException("No converter for " + type.getSimpleName() + " registered");
+				}
 
 				final OptionData option = new OptionData(optionType, parameter.getName().toLowerCase(), description, required);
 
@@ -233,10 +231,23 @@ public class AppCommandMeta<C extends AppCommand> {
 			public Object tryConvert(C command, OptionMapping option) {
 				checkRole(command.member(), role);
 
-				if (required && ((option == null || isNullOrEmpty(option.getAsString()) && isNullOrEmpty(defaultValue))))
+				if (required && (option == null || isNullOrEmpty(option.getAsString())))
 					throw new AppCommandException(name + " is required");
 
-				final Object object = convert(command, option);
+				Object object;
+
+				if (option == null) {
+					object = convert(command, defaultValue);
+				} else if (OPTION_CONVERTERS.containsKey(type)) {
+					object = OPTION_CONVERTERS.get(type).apply(option);
+				} else {
+					String string = (String) OPTION_CONVERTERS.get(String.class).apply(option);
+
+					if (isNullOrEmpty(string))
+						string = defaultValue;
+
+					object = convert(command, string);
+				}
 
 				if (required && object == null)
 					throw new AppCommandException(name + " is required");
@@ -244,26 +255,16 @@ public class AppCommandMeta<C extends AppCommand> {
 				return object;
 			}
 
-			public Object convert(C command, OptionMapping option) {
-				String string = null;
-				if (option != null) {
-					if (OPTION_CONVERTERS.containsKey(type))
-						return OPTION_CONVERTERS.get(type).apply(option);
-
-					string = (String) OPTION_CONVERTERS.get(String.class).apply(option);
-				}
+			public Object convert(C command, String string) {
 
 				final String input = string == null && !isNullOrEmpty(defaultValue) ? defaultValue : string;
 				final Supplier<AppCommandArgumentInstance> argumentInstance = () -> new AppCommandArgumentInstance(input, command, this);
 
-				if (CONVERTERS.containsKey(type))
-					return CONVERTERS.get(type).apply(argumentInstance.get());
+				var converter = AppCommandRegistry.getConverter(type);
+				if (converter == null)
+					throw new AppCommandMisconfiguredException("No converter for " + type.getSimpleName() + " registered");
 
-				for (var converter : CONVERTERS.entrySet())
-					if (converter.getKey().isAssignableFrom(type))
-						return CONVERTERS.get(type).apply(argumentInstance.get());
-
-				throw new AppCommandMisconfiguredException("No converter for " + type.getSimpleName() + " registered");
+				return converter.apply(argumentInstance.get());
 			}
 
 		}
@@ -297,6 +298,11 @@ public class AppCommandMeta<C extends AppCommand> {
 			return new SubcommandData(literals[index], description).addOptions(options);
 		}
 
+		public String getPath() {
+			final String path = String.join("/", literals);
+			return isNullOrEmpty(path) ? "" : "/" + path;
+		}
+
 	}
 
 	private void checkRole(Member member, String roleName) {
@@ -313,7 +319,7 @@ public class AppCommandMeta<C extends AppCommand> {
 
 	@NotNull
 	private static String requireDescription(Class<?> clazz) {
-		final Command annotation = clazz.getAnnotation(Command.class);
+		final Command annotation = getAnnotation(clazz, Command.class);
 		if (annotation == null)
 			throw new AppCommandMisconfiguredException(clazz.getSimpleName() + " does not have @" + Command.class.getSimpleName());
 
@@ -333,6 +339,17 @@ public class AppCommandMeta<C extends AppCommand> {
 
 	private static String defaultValue(Default annotation) {
 		return annotation == null ? null : annotation.value();
+	}
+
+	@Nullable
+	private static <A extends Annotation> A getAnnotation(Class<?> clazz, Class<A> annotation) {
+		A result = null;
+		for (var superclass : Utils.getSuperclasses(clazz)) {
+			result = superclass.getAnnotation(annotation);
+			if (result != null)
+				break;
+		}
+		return result;
 	}
 
 }

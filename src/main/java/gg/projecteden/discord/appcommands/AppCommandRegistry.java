@@ -2,6 +2,7 @@ package gg.projecteden.discord.appcommands;
 
 import gg.projecteden.discord.appcommands.AppCommandMeta.AppCommandMethod.AppCommandArgument;
 import gg.projecteden.discord.appcommands.exceptions.AppCommandException;
+import gg.projecteden.utils.CompletableFutures;
 import gg.projecteden.utils.Utils;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -26,6 +27,7 @@ import org.jetbrains.annotations.Nullable;
 import org.reflections.Reflections;
 
 import java.lang.annotation.Annotation;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -54,6 +56,11 @@ public record AppCommandRegistry(JDA jda, String packageName) {
 		jda.addEventListener(new AppCommandHandler());
 		for (var clazz : new Reflections(packageName).getSubTypesOf(AppCommand.class))
 			register(clazz);
+	}
+
+	public void unregisterAll() {
+		unregisterGlobalCommands();
+		unregisterGuildCommands();
 	}
 
 	public void register(Class<? extends AppCommand> clazz) {
@@ -99,13 +106,6 @@ public record AppCommandRegistry(JDA jda, String packageName) {
 				}
 			}
 
-			/*
-			guild.retrieveCommands().complete().forEach(existingCommand -> {
-				guild.deleteCommandById(existingCommand.getId()).complete();
-				success.accept("DELETE EXISTING /" + existingCommand.getName());
-			});
-			*/
-
 			Consumer<Command> setPrivilege = response -> {
 				if (!meta.requiresRole())
 					return;
@@ -138,20 +138,36 @@ public record AppCommandRegistry(JDA jda, String packageName) {
 		}
 	}
 
+	public void unregisterGuildCommands() {
+		for (Guild guild : jda.getGuilds())
+			unregisterGuildCommands(guild);
+	}
+
+	public void unregisterGuildCommands(Guild guild) {
+		String id = " " + guild.getName() + " | ";
+		Consumer<String> success = action -> System.out.println(id + "✔ " + action);
+		Consumer<String> failure = action -> System.out.println(id + "✗ " + action);
+
+		CompletableFutures.allOf(new ArrayList<>() {{
+					guild.retrieveCommands().complete().forEach(existingCommand ->
+							add(guild.deleteCommandById(existingCommand.getId()).submit()));
+				}})
+				.thenAcceptAsync(complete -> success.accept("DELETE EXISTING"))
+				.exceptionally(ex -> {
+					failure.accept("DELETE EXISTING");
+					ex.printStackTrace();
+					return null;
+				});
+	}
+
 	private void registerGlobalCommand(AppCommandMeta<?> meta) {
 		var command = meta.getCommand();
 
 		String id = "/" + command.getName() + " | GLOBAL | ";
 
+		Consumer<String> info = action -> System.out.println(id + "○ " + action);
 		Consumer<String> success = action -> System.out.println(id + "✔ " + action);
 		Consumer<String> failure = action -> System.out.println(id + "✗ " + action);
-
-		/*
-		JDA.retrieveCommands().complete().forEach(existingCommand -> {
-			JDA.deleteCommandById(existingCommand.getId()).complete();
-			success.accept("DELETE EXISTING");
-		});
-		*/
 
 		Consumer<Command> setPrivilege = response -> {
 			if (!meta.requiresRole())
@@ -168,6 +184,25 @@ public record AppCommandRegistry(JDA jda, String packageName) {
 			ex.printStackTrace();
 			return null;
 		});
+	}
+
+	public void unregisterGlobalCommands() {
+		Consumer<String> info = action -> System.out.println(" GLOBAL | " + "○ " + action);
+		Consumer<String> success = action -> System.out.println(" GLOBAL | " + "✔ " + action);
+		Consumer<String> failure = action -> System.out.println(" GLOBAL | " + "✗ " + action);
+
+		info.accept("DELETE EXISTING");
+		CompletableFutures.allOf(new ArrayList<>() {{
+					jda.retrieveCommands().complete().forEach(existingCommand ->
+							add(jda.deleteCommandById(existingCommand.getId()).submit()));
+				}})
+				.thenAcceptAsync(complete -> success.accept("DELETE EXISTING"))
+				.exceptionally(ex -> {
+					failure.accept("DELETE EXISTING");
+					ex.printStackTrace();
+					return null;
+				});
+		;
 	}
 
 	public static void mapOptionType(OptionType optionType, Class<?>... classes) {
@@ -191,6 +226,17 @@ public record AppCommandRegistry(JDA jda, String packageName) {
 	public static void registerConverter(List<Class<?>> classes, Function<AppCommandArgumentInstance, Object> converter) {
 		for (Class<?> clazz : classes)
 			CONVERTERS.put(clazz, converter);
+	}
+
+	public static Function<AppCommandArgumentInstance, Object> getConverter(Class<?> clazz) {
+		if (CONVERTERS.containsKey(clazz))
+			return CONVERTERS.get(clazz);
+
+		for (var converter : CONVERTERS.entrySet())
+			if (converter.getKey().isAssignableFrom(clazz))
+				return CONVERTERS.get(converter.getKey());
+
+		return null;
 	}
 
 	@Data
