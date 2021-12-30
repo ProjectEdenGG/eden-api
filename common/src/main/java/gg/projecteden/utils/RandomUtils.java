@@ -12,7 +12,7 @@ import java.util.Random;
 
 // lexi TODO: javadocs
 public class RandomUtils {
-	private RandomUtils() {
+	protected RandomUtils() {
 		throw new IllegalStateException("Cannot instantiate utility class");
 	}
 
