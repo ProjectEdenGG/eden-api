@@ -10,6 +10,7 @@ import gg.projecteden.discord.appcommands.annotations.Optional;
 import gg.projecteden.discord.appcommands.annotations.RequiredRole;
 import gg.projecteden.discord.appcommands.exceptions.AppCommandException;
 import gg.projecteden.discord.appcommands.exceptions.AppCommandMisconfiguredException;
+import gg.projecteden.exceptions.EdenException;
 import gg.projecteden.utils.Utils;
 import lombok.Data;
 import lombok.SneakyThrows;
@@ -26,6 +27,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.lang.annotation.Annotation;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.Arrays;
@@ -63,6 +65,8 @@ public class AppCommandMeta<C extends AppCommand> {
 		this.clazz = clazz;
 		this.role = defaultRole(getAnnotation(clazz, RequiredRole.class));
 		this.command = new CommandData(name, requireDescription(clazz));
+		if (!isNullOrEmpty(role))
+			this.command.setDefaultEnabled(false);
 
 		GuildCommand guildAnnotation = getAnnotation(clazz, GuildCommand.class);
 		if (guildAnnotation == null) {
@@ -142,9 +146,19 @@ public class AppCommandMeta<C extends AppCommand> {
 
 		@SneakyThrows
 		public void handle(SlashCommandEvent event) {
-			final C command = newInstance(new AppCommandEvent(event));
-			handleAnnotations(command);
-			method.invoke(command, convert(command, event.getOptions()));
+			try {
+				final C command = newInstance(new AppCommandEvent(event));
+				handleAnnotations(command);
+				method.invoke(command, convert(command, event.getOptions()));
+			} catch (Exception ex) {
+				Throwable error = ex;
+				if (ex instanceof InvocationTargetException)
+					error = ex.getCause();
+
+				event.deferReply(true).setContent(error.getMessage()).queue();
+				if (!(error instanceof EdenException))
+					error.printStackTrace();
+			}
 		}
 
 		private void handleAnnotations(C command) {
@@ -231,7 +245,7 @@ public class AppCommandMeta<C extends AppCommand> {
 			public Object tryConvert(C command, OptionMapping option) {
 				checkRole(command.member(), role);
 
-				if (required && (option == null || isNullOrEmpty(option.getAsString())))
+				if (required && option == null)
 					throw new AppCommandException(name + " is required");
 
 				Object object;
@@ -256,7 +270,6 @@ public class AppCommandMeta<C extends AppCommand> {
 			}
 
 			public Object convert(C command, String string) {
-
 				final String input = string == null && !isNullOrEmpty(defaultValue) ? defaultValue : string;
 				final Supplier<AppCommandArgumentInstance> argumentInstance = () -> new AppCommandArgumentInstance(input, command, this);
 

@@ -51,11 +51,20 @@ public record AppCommandRegistry(JDA jda, String packageName) {
 	static final Map<Class<?>, OptionType> OPTION_TYPE_MAP = new HashMap<>();
 	static final Map<Class<? extends Annotation>, BiConsumer<AppCommand, Annotation>> ANNOTATION_HANDLERS = new HashMap<>();
 
+	static AppCommandHandler handler;
+
 	@SneakyThrows
 	public void registerAll() {
-		jda.addEventListener(new AppCommandHandler());
+		registerListener();
 		for (var clazz : new Reflections(packageName).getSubTypesOf(AppCommand.class))
 			register(clazz);
+	}
+
+	public void registerListener() {
+		if (handler == null) {
+			handler = new AppCommandHandler();
+			jda.addEventListener(handler);
+		}
 	}
 
 	public void unregisterAll() {
@@ -116,10 +125,11 @@ public record AppCommandRegistry(JDA jda, String packageName) {
 					return;
 				}
 
-				final CommandPrivilege privilege = new CommandPrivilege(Type.ROLE, true, roles.iterator().next().getIdLong());
+				final Role requiredRole = roles.iterator().next();
+				final CommandPrivilege privilege = new CommandPrivilege(Type.ROLE, true, requiredRole.getIdLong());
 
 				guild.updateCommandPrivilegesById(response.getId(), privilege).submit().thenRun(() -> {
-					success.accept("PRIVILEGE");
+					success.accept("PRIVILEGE | " + requiredRole.getName() + " " + requiredRole.getId());
 				}).exceptionally(ex -> {
 					failure.accept("PRIVILEGE");
 					ex.printStackTrace();
@@ -305,6 +315,8 @@ public record AppCommandRegistry(JDA jda, String packageName) {
 		registerOptionConverter(GuildChannel.class, OptionMapping::getAsGuildChannel);
 		registerOptionConverter(MessageChannel.class, OptionMapping::getAsMessageChannel);
 		registerOptionConverter(IMentionable.class, OptionMapping::getAsMentionable);
+
+		registerConverter(String.class, AppCommandArgumentInstance::getInput);
 
 		registerConverter(Enum.class, argument -> {
 			final String input = argument.getInput();
