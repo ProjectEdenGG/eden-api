@@ -170,7 +170,8 @@ public class Utils {
 		for (Method method : methods) {
 			if (method.getName().matches("^(get|is|has).*") && method.getParameterCount() == 0) {
 				try {
-					output.put(method.getName(), method.invoke(object).toString());
+					final Object invoke = method.invoke(object);
+					output.put(method.getName(), invoke == null ? null : invoke.toString());
 				} catch (IllegalAccessException | InvocationTargetException e) {
 					e.printStackTrace();
 				}
@@ -332,6 +333,12 @@ public class Utils {
 		return parameter.getType() == Boolean.class || parameter.getType() == Boolean.TYPE;
 	}
 
+	/**
+	 * Returns a list of superclasses, including the provided class
+	 *
+	 * @param clazz subclass
+	 * @return superclasses
+	 */
 	public static <T> List<Class<? extends T>> getSuperclasses(Class<? extends T> clazz) {
 		List<Class<? extends T>> superclasses = new ArrayList<>();
 		while (clazz.getSuperclass() != Object.class) {

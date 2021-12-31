@@ -114,10 +114,6 @@
 			<id>projecteden-repo</id>
 			<url>https://sonatype.projecteden.gg/repository/maven-public/</url>
 		</repository>
-		<repository>
-			<id>jda-repo</id>
-			<url>https://m2.dv8tion.net/releases</url>
-		</repository>
 	</repositories>
 	<dependencies>
 		<dependency>
@@ -190,7 +186,7 @@
 		<dependency>
 			<groupId>net.dv8tion</groupId>
 			<artifactId>JDA</artifactId>
-			<version>4.3.0_313</version>
+			<version>5.0.0-alpha.3</version>
 			<exclusions>
 				<exclusion>
 					<groupId>club.minnced</groupId>
