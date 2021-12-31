@@ -53,6 +53,13 @@ public record AppCommandRegistry(JDA jda, String packageName) {
 
 	static AppCommandHandler handler;
 
+	private static final boolean debug = false;
+
+	private static void debug(String message) {
+		if (debug)
+			System.out.println(message);
+	}
+
 	@SneakyThrows
 	public void registerAll() {
 		registerListener();
@@ -93,15 +100,15 @@ public record AppCommandRegistry(JDA jda, String packageName) {
 	private void registerGuildCommand(AppCommandMeta<?> meta) {
 		var command = meta.getCommand();
 
-		System.out.println("/" + command.getName() + ": " + command.toData());
+		debug("/" + command.getName() + ": " + command.toData());
 
 		for (Guild guild : jda.getGuilds()) {
 			String id = "/" + command.getName() + " | " + guild.getName() + " | ";
 
-			Consumer<String> success = action -> System.out.println(id + "✔ " + action);
-			Consumer<String> failure = action -> System.out.println(id + "✗ " + action);
+			Consumer<String> success = action -> debug(id + "✔ " + action);
+			Consumer<String> failure = action -> debug(id + "✗ " + action);
 
-			System.out.println(id + "Registering");
+			debug(id + "Registering");
 
 			if (!meta.getIncludedGuilds().isEmpty()) {
 				if (!meta.getIncludedGuilds().contains(guild.getId())) {
@@ -155,8 +162,8 @@ public record AppCommandRegistry(JDA jda, String packageName) {
 
 	public void unregisterGuildCommands(Guild guild) {
 		String id = " " + guild.getName() + " | ";
-		Consumer<String> success = action -> System.out.println(id + "✔ " + action);
-		Consumer<String> failure = action -> System.out.println(id + "✗ " + action);
+		Consumer<String> success = action -> debug(id + "✔ " + action);
+		Consumer<String> failure = action -> debug(id + "✗ " + action);
 
 		CompletableFutures.allOf(new ArrayList<>() {{
 					guild.retrieveCommands().complete().forEach(existingCommand ->
@@ -175,9 +182,9 @@ public record AppCommandRegistry(JDA jda, String packageName) {
 
 		String id = "/" + command.getName() + " | GLOBAL | ";
 
-		Consumer<String> info = action -> System.out.println(id + "○ " + action);
-		Consumer<String> success = action -> System.out.println(id + "✔ " + action);
-		Consumer<String> failure = action -> System.out.println(id + "✗ " + action);
+		Consumer<String> info = action -> debug(id + "○ " + action);
+		Consumer<String> success = action -> debug(id + "✔ " + action);
+		Consumer<String> failure = action -> debug(id + "✗ " + action);
 
 		Consumer<Command> setPrivilege = response -> {
 			if (!meta.requiresRole())
@@ -197,9 +204,9 @@ public record AppCommandRegistry(JDA jda, String packageName) {
 	}
 
 	public void unregisterGlobalCommands() {
-		Consumer<String> info = action -> System.out.println(" GLOBAL | " + "○ " + action);
-		Consumer<String> success = action -> System.out.println(" GLOBAL | " + "✔ " + action);
-		Consumer<String> failure = action -> System.out.println(" GLOBAL | " + "✗ " + action);
+		Consumer<String> info = action -> debug(" GLOBAL | " + "○ " + action);
+		Consumer<String> success = action -> debug(" GLOBAL | " + "✔ " + action);
+		Consumer<String> failure = action -> debug(" GLOBAL | " + "✗ " + action);
 
 		info.accept("DELETE EXISTING");
 		CompletableFutures.allOf(new ArrayList<>() {{

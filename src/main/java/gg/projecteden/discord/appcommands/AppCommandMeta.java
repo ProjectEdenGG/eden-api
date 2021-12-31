@@ -96,8 +96,6 @@ public class AppCommandMeta<C extends AppCommand> {
 				put(name + methodMeta.getPath(), methodMeta);
 			});
 		}};
-
-		System.out.println(name + ": " + methods);
 	}
 
 	private void init() {
