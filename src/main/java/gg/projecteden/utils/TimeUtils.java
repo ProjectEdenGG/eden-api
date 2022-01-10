@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.ToString;
 
+import java.text.DecimalFormat;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -269,7 +270,7 @@ public class TimeUtils {
 		}
 
 		public boolean isNull() {
-			return millis == 0;
+			return original == 0;
 		}
 
 		public String format() {
@@ -297,18 +298,11 @@ public class TimeUtils {
 				result += hours + formatType.get(TimespanElement.HOUR, hours);
 			if (minutes > 0)
 				result += minutes + formatType.get(TimespanElement.MINUTE, minutes);
-			if (years == 0 && days == 0 && hours == 0) {
-				if (seconds > 0)
-					result += seconds + formatType.get(TimespanElement.SECOND, seconds);
-				if (minutes == 0 && millis > 0)
-					result += "." + millis + formatType.get(TimespanElement.MILLIS, millis);
-			}
-
-			if (result.length() == 0) {
-				if (seconds > 0)
-					result = seconds + formatType.get(TimespanElement.SECOND, seconds);
+			if (result.length() == 0 || (years == 0 && days == 0 && hours == 0)) {
 				if (millis > 0)
-					result += "." + millis + formatType.get(TimespanElement.MILLIS, millis);
+					result += seconds + new DecimalFormat(".000").format(millis / 1000d) + formatType.get(TimespanElement.SECOND, seconds);
+				else
+					result += seconds + formatType.get(TimespanElement.SECOND, seconds);
 			}
 
 			return result.trim();
