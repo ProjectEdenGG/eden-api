@@ -70,7 +70,7 @@ public class Punishment implements PlayerOwnedObject {
 	public String getTimeLeft() {
 		if (expiration == null)
 			if (seconds > 0)
-				return Timespan.of(seconds).format() + " left";
+				return Timespan.ofSeconds(seconds).format() + " left";
 			else
 				return "forever";
 		else if (hasBeenRemoved())
