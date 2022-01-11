@@ -14,7 +14,6 @@ import gg.projecteden.exceptions.EdenException;
 import gg.projecteden.interfaces.DatabaseObject;
 import gg.projecteden.mongodb.annotations.ObjectClass;
 import gg.projecteden.utils.Log;
-import gg.projecteden.utils.StringUtils;
 import lombok.Getter;
 import lombok.SneakyThrows;
 import me.lexikiq.HasUniqueId;
@@ -41,6 +40,7 @@ import java.util.concurrent.Executors;
 import java.util.function.Consumer;
 
 import static com.mongodb.MongoClient.getDefaultCodecRegistry;
+import static gg.projecteden.utils.UUIDUtils.UUID0;
 
 public abstract class MongoService<T extends DatabaseObject> {
 	protected static Datastore database;
@@ -197,7 +197,7 @@ public abstract class MongoService<T extends DatabaseObject> {
 	}
 
 	public T get0() {
-		return get(StringUtils.getUUID0());
+		return get(UUID0);
 	}
 
 	public T getApp() {

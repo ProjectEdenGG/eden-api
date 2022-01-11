@@ -12,7 +12,7 @@ import dev.morphia.mapping.Mapper;
 import dev.morphia.mapping.MapperOptions;
 import dev.morphia.mapping.MapperOptions.Builder;
 import gg.projecteden.EdenAPI;
-import gg.projecteden.utils.StringUtils;
+import gg.projecteden.utils.Nullables;
 import lombok.Getter;
 import org.reflections.Reflections;
 
@@ -35,7 +35,7 @@ public class MongoConnector {
 
 		DatabaseConfig config = EdenAPI.get().getDatabaseConfig();
 		// Load classes into memory once
-		if (!StringUtils.isNullOrEmpty(config.getModelPath()))
+		if (!Nullables.isNullOrEmpty(config.getModelPath()))
 			new Reflections(config.getModelPath()).getTypesAnnotatedWith(Entity.class);
 
 		MongoCredential root = MongoCredential.createScramSha1Credential(config.getUsername(), "admin", config.getPassword().toCharArray());

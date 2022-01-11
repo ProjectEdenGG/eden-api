@@ -40,7 +40,7 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import static gg.projecteden.discord.appcommands.AppCommandHandler.parseMentions;
-import static gg.projecteden.utils.StringUtils.isNullOrEmpty;
+import static gg.projecteden.utils.Nullables.isNullOrEmpty;
 
 public record AppCommandRegistry(JDA jda, String packageName) {
 	static final Map<String, AppCommandMeta<?>> COMMANDS = new HashMap<>();

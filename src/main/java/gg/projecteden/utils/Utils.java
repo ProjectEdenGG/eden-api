@@ -225,16 +225,6 @@ public class Utils {
 		return true;
 	}
 
-	@Contract("null -> true")
-	public static boolean isNullOrEmpty(Collection<?> collection) {
-		return collection == null || collection.isEmpty();
-	}
-
-	@Contract("null -> true")
-	public static boolean isNullOrEmpty(Map<?, ?> map) {
-		return map == null || map.isEmpty();
-	}
-
 	public static <T> List<T> combine(Collection<T>... lists) {
 		return new ArrayList<>() {{
 			for (Collection<T> list : lists)

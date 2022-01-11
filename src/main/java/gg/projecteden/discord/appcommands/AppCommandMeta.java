@@ -44,7 +44,7 @@ import static gg.projecteden.discord.appcommands.AppCommandRegistry.COMMANDS;
 import static gg.projecteden.discord.appcommands.AppCommandRegistry.OPTION_CONVERTERS;
 import static gg.projecteden.discord.appcommands.AppCommandRegistry.loadChoices;
 import static gg.projecteden.discord.appcommands.AppCommandRegistry.resolveOptionType;
-import static gg.projecteden.utils.StringUtils.isNullOrEmpty;
+import static gg.projecteden.utils.Nullables.isNullOrEmpty;
 import static gg.projecteden.utils.StringUtils.replaceLast;
 import static org.reflections.ReflectionUtils.getAllMethods;
 import static org.reflections.ReflectionUtils.withAnnotation;

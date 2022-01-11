@@ -3,6 +3,7 @@ package gg.projecteden.interfaces;
 import gg.projecteden.models.nerd.Nerd;
 import gg.projecteden.models.nickname.Nickname;
 import gg.projecteden.models.nickname.NicknameService;
+import gg.projecteden.utils.Nullables;
 import gg.projecteden.utils.StringUtils;
 import me.lexikiq.HasUniqueId;
 import org.jetbrains.annotations.NotNull;
@@ -44,7 +45,7 @@ public interface PlayerOwnedObject extends DatabaseObject, Nicknamed, HasUniqueI
 	}
 
 	default boolean hasNickname() {
-		return !StringUtils.isNullOrEmpty(getNicknameData().getNicknameRaw());
+		return !Nullables.isNullOrEmpty(getNicknameData().getNicknameRaw());
 	}
 
 	default String toPrettyString() {

@@ -2,11 +2,12 @@ package gg.projecteden.models.punishments;
 
 import gg.projecteden.mongodb.MongoPlayerService;
 import gg.projecteden.mongodb.annotations.ObjectClass;
-import gg.projecteden.utils.StringUtils;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+
+import static gg.projecteden.utils.UUIDUtils.UUID0;
 
 @ObjectClass(NameBanConfig.class)
 public class NameBanConfigService extends MongoPlayerService<NameBanConfig> {
@@ -17,7 +18,7 @@ public class NameBanConfigService extends MongoPlayerService<NameBanConfig> {
 	}
 
 	public NameBanConfig get() {
-		return get(StringUtils.getUUID0());
+		return get(UUID0);
 	}
 
 }
