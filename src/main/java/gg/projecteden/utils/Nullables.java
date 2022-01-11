@@ -22,9 +22,19 @@ public class Nullables {
 		return collection == null || collection.isEmpty();
 	}
 
+	@Contract("null -> false; !null -> _")
+	public static boolean isNotNullOrEmpty(Collection<?> collection) {
+		return !isNullOrEmpty(collection);
+	}
+
 	@Contract("null -> true; !null -> _")
 	public static boolean isNullOrEmpty(Map<?, ?> map) {
 		return map == null || map.isEmpty();
+	}
+
+	@Contract("null -> false; !null -> _")
+	public static boolean isNotNullOrEmpty(Map<?, ?> map) {
+		return !isNullOrEmpty(map);
 	}
 
 }
