@@ -4,7 +4,7 @@ import gg.projecteden.exceptions.postconfigured.PlayerNotFoundException;
 import gg.projecteden.mongodb.interfaces.PlayerOwnedObject;
 import gg.projecteden.mongodb.models.nerd.Nerd;
 import gg.projecteden.mongodb.models.nerd.NerdService;
-import gg.projecteden.utils.StringUtils;
+import gg.projecteden.utils.UUIDUtils;
 
 import java.util.UUID;
 import java.util.function.Function;
@@ -32,9 +32,9 @@ public abstract class MongoPlayerService<T extends PlayerOwnedObject> extends Mo
 		super.deleteSync(object);
 	}
 
-	private static final Function<UUID, Boolean> isV4 = StringUtils::isV4Uuid;
-	private static final Function<UUID, Boolean> is0 = StringUtils::isUUID0;
-	private static final Function<UUID, Boolean> isApp = StringUtils::isAppUuid;
+	private static final Function<UUID, Boolean> isV4 = UUIDUtils::isV4Uuid;
+	private static final Function<UUID, Boolean> is0 = UUIDUtils::isUUID0;
+	private static final Function<UUID, Boolean> isApp = UUIDUtils::isAppUuid;
 
 	private boolean isUuidValid(T object) {
 		final UUID uuid = object.getUuid();

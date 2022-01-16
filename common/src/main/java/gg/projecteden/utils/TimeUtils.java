@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.ToString;
 
+import java.text.DecimalFormat;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -15,7 +16,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static gg.projecteden.utils.StringUtils.isNullOrEmpty;
+import static gg.projecteden.utils.Nullables.isNullOrEmpty;
 
 public class TimeUtils {
 
@@ -101,14 +102,16 @@ public class TimeUtils {
 		DAY("d", null, "day"),
 		HOUR("h", "hr", "hour"),
 		MINUTE("m", "min", "minute"),
-		SECOND("s", "sec", "second");
+		SECOND("s", "sec", "second"),
+		MILLIS("ms", "milli", "millisecond"),
+		;
 
 		private final String shortLabel, mediumLabel, longLabel;
 
 		public int of(String input) {
 			try {
 				double multiplier = Double.parseDouble(input.replaceAll("[^\\d.]+", ""));
-				return TickTime.valueOf(name()).x(multiplier);
+				return MillisTime.valueOf(name()).x(multiplier);
 			} catch (NumberFormatException ex) {
 				throw new EdenException("Invalid " + name().toLowerCase() + ": &e" + input);
 			}
@@ -129,17 +132,17 @@ public class TimeUtils {
 	@ToString
 	public static class Timespan {
 		@Getter
-		private final int original;
+		private final long original;
 		private final boolean noneDisplay;
 		private final FormatType formatType;
-		private int years, days, hours, minutes, seconds;
+		private long years, days, hours, minutes, seconds, millis;
 		@Getter
 		private final String rest;
 
 		@Builder
-		public Timespan(int seconds, boolean noneDisplay, FormatType formatType, String rest) {
-			this.original = seconds;
-			this.seconds = seconds;
+		public Timespan(long millis, boolean noneDisplay, FormatType formatType, String rest) {
+			this.original = millis;
+			this.millis = millis;
 			this.noneDisplay = noneDisplay;
 			this.formatType = formatType == null ? FormatType.SHORT : formatType;
 			this.rest = rest;
@@ -159,15 +162,23 @@ public class TimeUtils {
 		}
 
 		public static Timespan of(LocalDateTime from, LocalDateTime to) {
-			return of(Long.valueOf(from.until(to, ChronoUnit.SECONDS)).intValue());
+			return ofMillis(from.until(to, ChronoUnit.MILLIS));
 		}
 
-		public static Timespan of(long seconds) {
-			return TimespanBuilder.of(seconds).build();
+		public static Timespan ofSeconds(long seconds) {
+			return TimespanBuilder.ofSeconds(seconds).build();
 		}
 
-		public static Timespan of(int seconds) {
-			return TimespanBuilder.of(seconds).build();
+		public static Timespan ofSeconds(int seconds) {
+			return TimespanBuilder.ofSeconds(seconds).build();
+		}
+
+		public static Timespan ofMillis(long millis) {
+			return TimespanBuilder.ofMillis(millis).build();
+		}
+
+		public static Timespan ofMillis(int millis) {
+			return TimespanBuilder.ofMillis(millis).build();
 		}
 
 		public static Timespan of(String input) {
@@ -180,31 +191,39 @@ public class TimeUtils {
 
 		public static class TimespanBuilder {
 
-			public static TimespanBuilder of(long seconds) {
-				return of(Long.valueOf(seconds).intValue());
+			public static TimespanBuilder ofSeconds(long seconds) {
+				return Timespan.builder().millis(seconds * 1000);
 			}
 
-			public static TimespanBuilder of(int seconds) {
-				return Timespan.builder().seconds(seconds);
+			public static TimespanBuilder ofSeconds(int seconds) {
+				return ofSeconds(Integer.valueOf(seconds).longValue());
+			}
+
+			public static TimespanBuilder ofMillis(long millis) {
+				return Timespan.builder().millis(millis);
+			}
+
+			public static TimespanBuilder ofMillis(int millis) {
+				return ofMillis(Integer.valueOf(millis).longValue());
 			}
 
 			public static TimespanBuilder of(String input) {
 				if (!isNullOrEmpty(input)) {
 					input = input.replaceFirst("[tT]:", "");
 					if (Utils.isLong(input))
-						return of(Long.parseLong(input));
+						return ofSeconds(Long.parseLong(input));
 
-					int seconds = 0;
+					long millis = 0;
 					for (TimespanElement element : TimespanElement.values()) {
 						Matcher matcher = element.getPattern().matcher(input);
 
 						while (matcher.find())
-							seconds += element.of(matcher.group());
+							millis += element.of(matcher.group());
 					}
-					return of(seconds / TickTime.SECOND.get());
+					return ofMillis(millis);
 				}
 
-				return of(0);
+				return ofMillis(0);
 			}
 
 			public static TimespanBuilder find(String input) {
@@ -213,11 +232,11 @@ public class TimeUtils {
 					while (matcher.find()) {
 						String group = matcher.group();
 						if (group.trim().length() == 0) continue;
-						return TimespanBuilder.of(group).rest(input.replaceFirst(group, "").trim());
+						return of(group).rest(input.replaceFirst(group, "").trim());
 					}
 				}
 
-				return of(0).rest(input);
+				return ofSeconds(0).rest(input);
 			}
 
 			@ToString.Include
@@ -232,24 +251,26 @@ public class TimeUtils {
 		}
 
 		private void calculate() {
-			if (seconds == 0) return;
+			if (millis == 0) return;
 
-			years = seconds / 60 / 60 / 24 / 365;
-			seconds -= years * 60 * 60 * 24 * 365;
-			days = seconds / 60 / 60 / 24;
-			seconds -= days * 60 * 60 * 24;
-			hours = seconds / 60 / 60;
-			seconds -= hours * 60 * 60;
-			minutes = seconds / 60;
-			seconds -= minutes * 60;
+			years = millis / 1000 / 60 / 60 / 24 / 365;
+			millis -= years * 1000 * 60 * 60 * 24 * 365;
+			days = millis / 1000 / 60 / 60 / 24;
+			millis -= days * 1000 * 60 * 60 * 24;
+			hours = millis / 1000 / 60 / 60;
+			millis -= hours * 1000 * 60 * 60;
+			minutes = millis / 1000 / 60;
+			millis -= minutes * 1000 * 60;
+			seconds = millis / 1000;
+			millis -= seconds * 1000;
 		}
 
 		public LocalDateTime fromNow() {
-			return LocalDateTime.now().plusSeconds(original);
+			return LocalDateTime.now().plus(original, ChronoUnit.MILLIS);
 		}
 
 		public boolean isNull() {
-			return seconds == 0;
+			return original == 0;
 		}
 
 		public String format() {
@@ -261,6 +282,13 @@ public class TimeUtils {
 			if (original == 0 && noneDisplay)
 				return "None";
 
+			long years = this.years;
+			long days = this.days;
+			if (formatType == FormatType.SHORT_NO_YEARS) {
+				days += years * 365;
+				years = 0;
+			}
+
 			String result = "";
 			if (years > 0)
 				result += years + formatType.get(TimespanElement.YEAR, years);
@@ -270,11 +298,12 @@ public class TimeUtils {
 				result += hours + formatType.get(TimespanElement.HOUR, hours);
 			if (minutes > 0)
 				result += minutes + formatType.get(TimespanElement.MINUTE, minutes);
-			if (years == 0 && days == 0 && hours == 0 && minutes > 0 && seconds > 0)
-				result += seconds + formatType.get(TimespanElement.SECOND, seconds);
-
-			if (result.length() == 0)
-				result = original + formatType.get(TimespanElement.SECOND, seconds);
+			if (result.length() == 0 || (years == 0 && days == 0 && hours == 0)) {
+				if (millis > 0)
+					result += seconds + new DecimalFormat(".000").format(millis / 1000d) + formatType.get(TimespanElement.SECOND, seconds);
+				else
+					result += seconds + formatType.get(TimespanElement.SECOND, seconds);
+			}
 
 			return result.trim();
 		}
@@ -282,24 +311,30 @@ public class TimeUtils {
 		public enum FormatType {
 			SHORT {
 				@Override
-				public String get(TimespanElement label, int value) {
+				public String get(TimespanElement label, long value) {
 					return label.getShortLabel() + " ";
 				}
 			},
 			MEDIUM {
 				@Override
-				public String get(TimespanElement label, int value) {
+				public String get(TimespanElement label, long value) {
 					return " " + StringUtils.plural(label.getMediumLabel() == null ? label.getLongLabel() : label.getMediumLabel(), value) + " ";
 				}
 			},
 			LONG {
 				@Override
-				public String get(TimespanElement label, int value) {
+				public String get(TimespanElement label, long value) {
 					return " " + StringUtils.plural(label.getLongLabel(), value) + " ";
+				}
+			},
+			SHORT_NO_YEARS {
+				@Override
+				public String get(TimespanElement label, long value) {
+					return SHORT.get(label, value);
 				}
 			};
 
-			abstract String get(TimespanElement label, int value);
+			abstract String get(TimespanElement label, long value);
 		}
 
 	}

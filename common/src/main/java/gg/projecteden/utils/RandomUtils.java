@@ -67,7 +67,7 @@ public class RandomUtils {
 
 	@Contract("null -> null")
 	public static <T> T randomElement(@Nullable Collection<@Nullable T> list) {
-		if (Utils.isNullOrEmpty(list)) return null;
+		if (Nullables.isNullOrEmpty(list)) return null;
 		int getIndex = random.nextInt(list.size());
 		int currentIndex = 0;
 		for (T item : list) {
@@ -83,7 +83,7 @@ public class RandomUtils {
 
 	@Contract("null -> null")
 	private static <T> T randomElement(@Nullable List<@Nullable T> list) {
-		if (Utils.isNullOrEmpty(list)) return null;
+		if (Nullables.isNullOrEmpty(list)) return null;
 		return list.get(random.nextInt(list.size()));
 	}
 

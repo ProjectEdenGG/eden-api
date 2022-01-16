@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-import static gg.projecteden.utils.StringUtils.isNullOrEmpty;
+import static gg.projecteden.utils.Nullables.isNullOrEmpty;
 
 @Data
 @NoArgsConstructor
@@ -70,7 +70,7 @@ public class Punishment implements PlayerOwnedObject {
 	public String getTimeLeft() {
 		if (expiration == null)
 			if (seconds > 0)
-				return Timespan.of(seconds).format() + " left";
+				return Timespan.ofSeconds(seconds).format() + " left";
 			else
 				return "forever";
 		else if (hasBeenRemoved())

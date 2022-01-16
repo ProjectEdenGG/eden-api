@@ -8,7 +8,7 @@ import gg.projecteden.mongodb.interfaces.PlayerOwnedObject;
 import gg.projecteden.mongodb.serializers.LocalDateConverter;
 import gg.projecteden.mongodb.serializers.LocalDateTimeConverter;
 import gg.projecteden.mongodb.serializers.UUIDConverter;
-import gg.projecteden.utils.StringUtils;
+import gg.projecteden.utils.UUIDUtils;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -64,7 +64,7 @@ public class Nerd implements PlayerOwnedObject {
 	}
 
 	public @NotNull String getName() {
-		if (StringUtils.isUUID0(uuid))
+		if (UUIDUtils.isUUID0(uuid))
 			return "Console";
 		if (name == null)
 			return "api-" + getUuid();

@@ -6,6 +6,7 @@ import gg.projecteden.interfaces.Nicknamed;
 import gg.projecteden.mongodb.models.nerd.Nerd;
 import gg.projecteden.mongodb.models.nickname.Nickname;
 import gg.projecteden.mongodb.models.nickname.NicknameService;
+import gg.projecteden.utils.Nullables;
 import gg.projecteden.utils.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
@@ -46,7 +47,7 @@ public interface PlayerOwnedObject extends DatabaseObject, Nicknamed, HasUniqueI
 	}
 
 	default boolean hasNickname() {
-		return !StringUtils.isNullOrEmpty(getNicknameData().getNicknameRaw());
+		return !Nullables.isNullOrEmpty(getNicknameData().getNicknameRaw());
 	}
 
 	default String toPrettyString() {

@@ -16,9 +16,15 @@ import static gg.projecteden.mongodb.models.scheduledjobs.common.AbstractJob.get
 public class ScheduledJobsRunner {
 	private static final ScheduledJobsService service = new ScheduledJobsService();
 	private static final ScheduledJobs jobs = service.getApp();
+	private static int processorTaskId, reschedulerTaskId;
 
 	public static void start() {
 		// static init
+	}
+
+	public static void stop() {
+		Tasks.cancel(processorTaskId);
+		Tasks.cancel(reschedulerTaskId);
 	}
 
 	static {
@@ -49,7 +55,7 @@ public class ScheduledJobsRunner {
 	}
 
 	private static void processor() {
-		Tasks.repeat(0, MillisTime.SECOND, () -> {
+		processorTaskId = Tasks.repeat(0, MillisTime.SECOND, () -> {
 			final Set<AbstractJob> ready = jobs.getReady();
 			if (ready.isEmpty())
 				return;
@@ -63,7 +69,7 @@ public class ScheduledJobsRunner {
 
 	private static void rescheduler() {
 		final Set<Class<? extends AbstractJob>> subclasses = AbstractJob.getSubclasses();
-		Tasks.repeat(0, MillisTime.MINUTE, () -> subclasses.forEach(clazz -> {
+		reschedulerTaskId = Tasks.repeat(0, MillisTime.MINUTE, () -> subclasses.forEach(clazz -> {
 			final LocalDateTime timestamp = getNextExecutionTime(clazz);
 			if (timestamp == null)
 				return;

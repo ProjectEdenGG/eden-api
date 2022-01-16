@@ -6,7 +6,7 @@ import dev.morphia.annotations.Id;
 import gg.projecteden.interfaces.HasUniqueId;
 import gg.projecteden.mongodb.interfaces.PlayerOwnedObject;
 import gg.projecteden.mongodb.serializers.UUIDConverter;
-import gg.projecteden.utils.StringUtils;
+import gg.projecteden.utils.UUIDUtils;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -17,7 +17,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.UUID;
 
-import static gg.projecteden.utils.StringUtils.isNullOrEmpty;
+import static gg.projecteden.utils.Nullables.isNullOrEmpty;
 
 @Getter
 @Builder
@@ -46,7 +46,7 @@ public class Nickname implements PlayerOwnedObject {
 	}
 
 	public @NotNull String getNickname() {
-		if (StringUtils.isUUID0(uuid))
+		if (UUIDUtils.isUUID0(uuid))
 			return "Console";
 		if (isNullOrEmpty(nickname))
 			return getName();

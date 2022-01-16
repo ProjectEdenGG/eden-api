@@ -4,7 +4,7 @@ import dev.morphia.converters.SimpleValueConverter;
 import dev.morphia.converters.TypeConverter;
 import dev.morphia.mapping.MappedField;
 import dev.morphia.mapping.Mapper;
-import gg.projecteden.utils.StringUtils;
+import gg.projecteden.utils.Nullables;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
@@ -32,7 +32,7 @@ public class LocalDateConverter extends TypeConverter implements SimpleValueConv
 
 	public LocalDate decode(Object value) {
 		if (!(value instanceof String string)) return null;
-		if (StringUtils.isNullOrEmpty(string)) return null;
+		if (Nullables.isNullOrEmpty(string)) return null;
 
 		try {
 			return LocalDate.parse(string);
