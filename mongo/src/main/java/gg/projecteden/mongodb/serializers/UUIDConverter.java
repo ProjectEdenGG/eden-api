@@ -4,9 +4,11 @@ import dev.morphia.converters.SimpleValueConverter;
 import dev.morphia.converters.TypeConverter;
 import dev.morphia.mapping.MappedField;
 import dev.morphia.mapping.Mapper;
+import lombok.NoArgsConstructor;
 
 import java.util.UUID;
 
+@NoArgsConstructor
 public class UUIDConverter extends TypeConverter implements SimpleValueConverter {
 
 	public UUIDConverter(Mapper mapper) {

@@ -41,6 +41,7 @@ import java.util.stream.Collectors;
 
 import static gg.projecteden.discord.appcommands.AppCommandHandler.parseMentions;
 import static gg.projecteden.utils.Nullables.isNullOrEmpty;
+import static gg.projecteden.utils.Utils.subTypesOf;
 
 public record AppCommandRegistry(JDA jda, String packageName) {
 	static final Map<String, AppCommandMeta<?>> COMMANDS = new HashMap<>();
@@ -63,7 +64,7 @@ public record AppCommandRegistry(JDA jda, String packageName) {
 	@SneakyThrows
 	public void registerAll() {
 		registerListener();
-		for (var clazz : new Reflections(packageName).getSubTypesOf(AppCommand.class))
+		for (var clazz : subTypesOf(AppCommand.class, packageName))
 			register(clazz);
 	}
 

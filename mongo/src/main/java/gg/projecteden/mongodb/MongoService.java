@@ -41,13 +41,14 @@ import java.util.function.Consumer;
 
 import static com.mongodb.MongoClient.getDefaultCodecRegistry;
 import static gg.projecteden.utils.UUIDUtils.UUID0;
+import static gg.projecteden.utils.Utils.subTypesOf;
 
 public abstract class MongoService<T extends DatabaseObject> {
 	protected static Datastore database;
 	protected static String _id = "_id";
 
 	@Getter
-	private static final Set<Class<? extends MongoService>> services = new Reflections("eden.models").getSubTypesOf(MongoService.class);
+	private static final Set<Class<? extends MongoService>> services = subTypesOf(MongoService.class, MongoService.class + ".models");
 	@Getter
 	private static final Map<Class<? extends DatabaseObject>, Class<? extends MongoService>> objectToServiceMap = new HashMap<>();
 	@Getter
@@ -61,12 +62,8 @@ public abstract class MongoService<T extends DatabaseObject> {
 		loadServices(Collections.emptySet());
 	}
 
-	public static void loadServices(String path) {
-		loadServices(new Reflections(path));
-	}
-
-	public static void loadServices(Reflections reflections) {
-		loadServices(reflections.getSubTypesOf(MongoService.class));
+	public static void loadServices(String... packages) {
+		loadServices(subTypesOf(MongoService.class, packages));
 	}
 
 	public static void loadServices(Set<Class<? extends MongoService>> newServices) {

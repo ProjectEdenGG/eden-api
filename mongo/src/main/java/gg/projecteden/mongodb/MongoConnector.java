@@ -21,6 +21,9 @@ import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.List;
 
+import static gg.projecteden.utils.Utils.reflectionsOf;
+import static gg.projecteden.utils.Utils.subTypesOf;
+
 public class MongoConnector {
 	protected static final Morphia morphia = new Morphia();
 	@Getter
@@ -37,7 +40,7 @@ public class MongoConnector {
 		DatabaseConfig config = EdenAPI.get().getDatabaseConfig();
 		// Load classes into memory once
 		if (!Nullables.isNullOrEmpty(config.getModelPath()))
-			new Reflections(config.getModelPath()).getTypesAnnotatedWith(Entity.class);
+			reflectionsOf(config.getModelPath()).getTypesAnnotatedWith(Entity.class);
 
 		MongoCredential root = MongoCredential.createScramSha1Credential(config.getUsername(), "admin", config.getPassword().toCharArray());
 		MongoClient mongoClient = new MongoClient(new ServerAddress(), root, MongoClientOptions.builder().build());
@@ -45,7 +48,7 @@ public class MongoConnector {
 		datastore = morphia.createDatastore(mongoClient, database);
 		datastore.ensureIndexes();
 
-		List<Class<? extends TypeConverter>> classes = new ArrayList<>(new Reflections(MongoConnector.class.getPackage().getName() + ".serializers").getSubTypesOf(TypeConverter.class));
+		List<Class<? extends TypeConverter>> classes = new ArrayList<>(subTypesOf(TypeConverter.class, MongoConnector.class.getPackage().getName() + ".serializers"));
 		EdenAPI.get(EdenDatabaseAPI.class).ifPresent(api -> classes.addAll(api.getMongoConverters()));
 
 		for (Class<? extends TypeConverter> clazz : classes) {

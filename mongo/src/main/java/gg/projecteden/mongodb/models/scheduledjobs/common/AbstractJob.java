@@ -27,6 +27,7 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 import static gg.projecteden.utils.StringUtils.camelCase;
+import static gg.projecteden.utils.Utils.subTypesOf;
 
 @Data
 public abstract class AbstractJob {
@@ -49,8 +50,7 @@ public abstract class AbstractJob {
 	}
 
 	@Getter
-	private static Set<Class<? extends AbstractJob>> subclasses = new Reflections(EdenAPI.class.getPackage().getName())
-			.getSubTypesOf(AbstractJob.class);
+	private static Set<Class<? extends AbstractJob>> subclasses = subTypesOf(AbstractJob.class, EdenAPI.class.getPackageName());
 
 	public void setStatus(JobStatus status) {
 		jobs().get(this.status).remove(this);

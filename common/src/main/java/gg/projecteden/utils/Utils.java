@@ -2,6 +2,9 @@ package gg.projecteden.utils;
 
 import gg.projecteden.annotations.Disabled;
 import gg.projecteden.annotations.Environments;
+import io.github.classgraph.ClassGraph;
+import io.github.classgraph.ClassInfo;
+import io.github.classgraph.ScanResult;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.SneakyThrows;
@@ -12,6 +15,8 @@ import okhttp3.ResponseBody;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.reflections.Reflections;
+import org.reflections.util.ConfigurationBuilder;
 
 import java.io.File;
 import java.io.InputStream;
@@ -40,6 +45,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Scanner;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiFunction;
 import java.util.function.BiPredicate;
 import java.util.function.BooleanSupplier;
@@ -50,6 +57,42 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class Utils {
+
+	public static Reflections reflectionsOf(String... packageNames) {
+		return new Reflections(new ConfigurationBuilder().forPackages(packageNames));
+	}
+
+	private static final Map<String, ScanResult> SCAN_CACHE = new ConcurrentHashMap<>();
+
+	@SuppressWarnings("unchecked")
+	public static <T> Set<Class<? extends T>> subTypesOf(Class<T> superType, String... packages) {
+		String cacheKey = Arrays.stream(packages).sorted().collect(Collectors.joining(":"));
+
+		ScanResult scanResults = SCAN_CACHE.computeIfAbsent(cacheKey, $2 -> new ClassGraph()
+				.acceptPackages(packages)
+				.enableAllInfo()
+				.initializeLoadedClasses()
+				.scan());
+
+		return scanResults.getAllClasses().stream()
+				.filter(impl -> superType.isInterface() ? impl.implementsInterface(superType.getName()) : impl.extendsSuperclass(superType.getName()))
+				.flatMap(info -> loadClass(info, superType))
+				.filter(Objects::nonNull)
+				.map(clazz -> (Class<? extends T>) clazz)
+				.collect(Collectors.toSet());
+	}
+
+	private static Stream<Class<?>> loadClass(ClassInfo classInfo, Class<?> superType) {
+		try {
+			return Stream.of(Class.forName(classInfo.getName(), true, superType.getClassLoader()));
+		} catch (Throwable ignore) {}
+
+		try {
+			return Stream.of(classInfo.loadClass());
+		} catch (Throwable ignore) {}
+
+		return null;
+	}
 
 	public static <K extends Comparable<? super K>, V> LinkedHashMap<K, V> sortByKey(Map<K, V> map) {
 		return collect(map.entrySet().stream().sorted(Entry.comparingByKey()));
