@@ -21,7 +21,6 @@ import org.bson.BsonDocument;
 import org.bson.Document;
 import org.bson.json.JsonWriterSettings;
 import org.jetbrains.annotations.NotNull;
-import org.reflections.Reflections;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -48,7 +47,7 @@ public abstract class MongoService<T extends DatabaseObject> {
 	protected static String _id = "_id";
 
 	@Getter
-	private static final Set<Class<? extends MongoService>> services = subTypesOf(MongoService.class, MongoService.class + ".models");
+	private static final Set<Class<? extends MongoService>> services = subTypesOf(MongoService.class, MongoService.class.getPackageName() + ".models");
 	@Getter
 	private static final Map<Class<? extends DatabaseObject>, Class<? extends MongoService>> objectToServiceMap = new HashMap<>();
 	@Getter
