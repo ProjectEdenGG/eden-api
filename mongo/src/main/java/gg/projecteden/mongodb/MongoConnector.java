@@ -15,14 +15,13 @@ import gg.projecteden.DatabaseConfig;
 import gg.projecteden.EdenAPI;
 import gg.projecteden.utils.Nullables;
 import lombok.Getter;
-import org.reflections.Reflections;
 
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.List;
 
-import static gg.projecteden.utils.Utils.reflectionsOf;
 import static gg.projecteden.utils.Utils.subTypesOf;
+import static gg.projecteden.utils.Utils.typesAnnotatedWith;
 
 public class MongoConnector {
 	protected static final Morphia morphia = new Morphia();
@@ -40,7 +39,7 @@ public class MongoConnector {
 		DatabaseConfig config = EdenAPI.get().getDatabaseConfig();
 		// Load classes into memory once
 		if (!Nullables.isNullOrEmpty(config.getModelPath()))
-			reflectionsOf(config.getModelPath()).getTypesAnnotatedWith(Entity.class);
+			typesAnnotatedWith(Entity.class, config.getModelPath());
 
 		MongoCredential root = MongoCredential.createScramSha1Credential(config.getUsername(), "admin", config.getPassword().toCharArray());
 		MongoClient mongoClient = new MongoClient(new ServerAddress(), root, MongoClientOptions.builder().build());

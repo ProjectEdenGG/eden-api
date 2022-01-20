@@ -53,10 +53,6 @@ public abstract class MongoService<T extends DatabaseObject> {
 	@Getter
 	private static final Map<Class<? extends MongoService>, Class<? extends DatabaseObject>> serviceToObjectMap = new HashMap<>();
 
-	static {
-		loadServices();
-	}
-
 	public static void loadServices() {
 		loadServices(Collections.emptySet());
 	}

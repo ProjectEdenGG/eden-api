@@ -20,6 +20,7 @@ import org.reflections.util.ConfigurationBuilder;
 
 import java.io.File;
 import java.io.InputStream;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Array;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -64,18 +65,36 @@ public class Utils {
 
 	private static final Map<String, ScanResult> SCAN_CACHE = new ConcurrentHashMap<>();
 
-	@SuppressWarnings("unchecked")
 	public static <T> Set<Class<? extends T>> subTypesOf(Class<T> superType, String... packages) {
-		String cacheKey = Arrays.stream(packages).sorted().collect(Collectors.joining(":"));
+		return getClasses(superType, packages, impl -> {
+			if (superType.isInterface())
+				return impl.implementsInterface(superType);
+			else
+				return impl.extendsSuperclass(superType);
+		});
+	}
 
-		ScanResult scanResults = SCAN_CACHE.computeIfAbsent(cacheKey, $2 -> new ClassGraph()
+	public static <T> Set<Class<? extends T>> typesAnnotatedWith(Class<? extends Annotation> annotation, String... packages) {
+		return getClasses(annotation, packages, impl -> impl.hasAnnotation(annotation));
+	}
+
+	private static ScanResult scan(String[] packages) {
+		return SCAN_CACHE.computeIfAbsent(getCacheKey(packages), $ -> new ClassGraph()
 				.acceptPackages(packages)
 				.enableAllInfo()
 				.initializeLoadedClasses()
 				.scan());
+	}
 
-		return scanResults.getAllClasses().stream()
-				.filter(impl -> superType.isInterface() ? impl.implementsInterface(superType.getName()) : impl.extendsSuperclass(superType.getName()))
+	@NotNull
+	private static String getCacheKey(String[] packages) {
+		return Arrays.stream(packages).sorted().collect(Collectors.joining(":"));
+	}
+
+	@SuppressWarnings("unchecked")
+	private static <T> Set<Class<? extends T>> getClasses(Class<?> superType, String[] packages, Predicate<ClassInfo> filter) {
+		return scan(packages).getAllClasses().stream()
+				.filter(filter)
 				.flatMap(info -> loadClass(info, superType))
 				.filter(Objects::nonNull)
 				.map(clazz -> (Class<? extends T>) clazz)
