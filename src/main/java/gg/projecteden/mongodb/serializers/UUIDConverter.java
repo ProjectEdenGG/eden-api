@@ -9,6 +9,10 @@ import java.util.UUID;
 
 public class UUIDConverter extends TypeConverter implements SimpleValueConverter {
 
+	public UUIDConverter() {
+		this(null);
+	}
+
 	public UUIDConverter(Mapper mapper) {
 		super(UUID.class);
 	}
