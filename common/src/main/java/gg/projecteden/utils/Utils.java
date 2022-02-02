@@ -65,17 +65,17 @@ public class Utils {
 
 	private static final Map<String, ScanResult> SCAN_CACHE = new ConcurrentHashMap<>();
 
-	public static <T> Set<Class<? extends T>> subTypesOf(Class<T> superType, String... packages) {
-		return getClasses(superType, packages, impl -> {
-			if (superType.isInterface())
-				return impl.implementsInterface(superType);
+	public static <T> Set<Class<? extends T>> subTypesOf(Class<T> superclass, String... packages) {
+		return getClasses(packages, subclass -> {
+			if (superclass.isInterface())
+				return subclass.implementsInterface(superclass);
 			else
-				return impl.extendsSuperclass(superType);
+				return subclass.extendsSuperclass(superclass);
 		});
 	}
 
 	public static <T> Set<Class<? extends T>> typesAnnotatedWith(Class<? extends Annotation> annotation, String... packages) {
-		return getClasses(annotation, packages, impl -> impl.hasAnnotation(annotation));
+		return getClasses(packages, impl -> impl.hasAnnotation(annotation));
 	}
 
 	private static ScanResult scan(String[] packages) {
@@ -92,25 +92,12 @@ public class Utils {
 	}
 
 	@SuppressWarnings("unchecked")
-	private static <T> Set<Class<? extends T>> getClasses(Class<?> superType, String[] packages, Predicate<ClassInfo> filter) {
+	private static <T> Set<Class<? extends T>> getClasses(String[] packages, Predicate<ClassInfo> filter) {
 		return scan(packages).getAllClasses().stream()
 				.filter(filter)
-				.flatMap(info -> loadClass(info, superType))
-				.filter(Objects::nonNull)
+				.map(ClassInfo::loadClass)
 				.map(clazz -> (Class<? extends T>) clazz)
 				.collect(Collectors.toSet());
-	}
-
-	private static Stream<Class<?>> loadClass(ClassInfo classInfo, Class<?> superType) {
-		try {
-			return Stream.of(Class.forName(classInfo.getName(), true, superType.getClassLoader()));
-		} catch (Throwable ignore) {}
-
-		try {
-			return Stream.of(classInfo.loadClass());
-		} catch (Throwable ignore) {}
-
-		return null;
 	}
 
 	public static <K extends Comparable<? super K>, V> LinkedHashMap<K, V> sortByKey(Map<K, V> map) {
