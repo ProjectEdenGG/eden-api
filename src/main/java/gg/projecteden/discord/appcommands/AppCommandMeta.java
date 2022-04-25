@@ -15,12 +15,13 @@ import gg.projecteden.utils.Utils;
 import lombok.Data;
 import lombok.SneakyThrows;
 import net.dv8tion.jda.api.entities.Member;
-import net.dv8tion.jda.api.events.interaction.SlashCommandEvent;
+import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.Command.Choice;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
-import net.dv8tion.jda.api.interactions.commands.build.CommandData;
+import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
+import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData;
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandGroupData;
 import org.jetbrains.annotations.NotNull;
@@ -57,14 +58,14 @@ public class AppCommandMeta<C extends AppCommand> {
 	private final boolean guildCommand;
 	private final List<String> includedGuilds;
 	private final List<String> excludedGuilds;
-	private final CommandData command;
+	private final SlashCommandData command;
 	private final Map<String, AppCommandMethod> methods;
 
 	public AppCommandMeta(Class<C> clazz) {
 		this.name = replaceLast(clazz.getSimpleName(), AppCommand.class.getSimpleName(), "").toLowerCase();
 		this.clazz = clazz;
 		this.role = defaultRole(getAnnotation(clazz, RequiredRole.class));
-		this.command = new CommandData(name, requireDescription(clazz));
+		this.command = Commands.slash(name, requireDescription(clazz));
 		if (!isNullOrEmpty(role))
 			this.command.setDefaultEnabled(false);
 
@@ -138,12 +139,12 @@ public class AppCommandMeta<C extends AppCommand> {
 			build();
 		}
 
-		public static AppCommandMeta<?>.AppCommandMethod of(SlashCommandEvent event) {
+		public static AppCommandMeta<?>.AppCommandMethod of(SlashCommandInteractionEvent event) {
 			return COMMANDS.get(event.getName()).getMethod(event.getCommandPath());
 		}
 
 		@SneakyThrows
-		public void handle(SlashCommandEvent event) {
+		public void handle(SlashCommandInteractionEvent event) {
 			try {
 				final C command = newInstance(new AppCommandEvent(event));
 				handleAnnotations(command);
