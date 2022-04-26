@@ -74,13 +74,21 @@ public class TimeUtils {
 		return LocalDate.from(DateTimeFormatter.ofPattern("M/d/yyyy").parse(input));
 	}
 
+	public static LocalDate parseShorterDate(String input) {
+		return LocalDate.from(DateTimeFormatter.ofPattern("M/d/yy").parse(input));
+	}
+
 	public static LocalDate parseDate(String input) {
+		try {
+			return parseShorterDate(input);
+		} catch (DateTimeParseException ignore) {
+		}
 		try {
 			return parseShortDate(input);
 		} catch (DateTimeParseException ignore) {
 		}
 		try {
-			return parseDate(input);
+			return LocalDate.parse(input);
 		} catch (DateTimeParseException ignore) {
 		}
 		throw new EdenException("Could not parse date, correct format is MM/DD/YYYY");
