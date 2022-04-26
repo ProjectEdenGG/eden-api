@@ -116,7 +116,7 @@ public class TimeUtils {
 
 		private final String shortLabel, mediumLabel, longLabel;
 
-		public int of(String input) {
+		public long of(String input) {
 			try {
 				double multiplier = Double.parseDouble(input.replaceAll("[^\\d.]+", ""));
 				return MillisTime.valueOf(name()).x(multiplier);
@@ -216,22 +216,22 @@ public class TimeUtils {
 			}
 
 			public static TimespanBuilder of(String input) {
-				if (!isNullOrEmpty(input)) {
-					input = input.replaceFirst("[tT]:", "");
-					if (Utils.isLong(input))
-						return ofSeconds(Long.parseLong(input));
+				if (isNullOrEmpty(input))
+					return ofMillis(0);
 
-					long millis = 0;
-					for (TimespanElement element : TimespanElement.values()) {
-						Matcher matcher = element.getPattern().matcher(input);
+				input = input.replaceFirst("[tT]:", "");
+				if (Utils.isLong(input))
+					return ofSeconds(Long.parseLong(input));
 
-						while (matcher.find())
-							millis += element.of(matcher.group());
-					}
-					return ofMillis(millis);
+				long millis = 0;
+				for (TimespanElement element : TimespanElement.values()) {
+					Matcher matcher = element.getPattern().matcher(input);
+
+					while (matcher.find())
+						millis += element.of(matcher.group());
 				}
 
-				return ofMillis(0);
+				return ofMillis(millis);
 			}
 
 			public static TimespanBuilder find(String input) {
@@ -277,6 +277,10 @@ public class TimeUtils {
 			return LocalDateTime.now().plus(original, ChronoUnit.MILLIS);
 		}
 
+		public LocalDateTime sinceNow() {
+			return LocalDateTime.now().minus(original, ChronoUnit.MILLIS);
+		}
+
 		public boolean isNull() {
 			return original == 0;
 		}
@@ -287,7 +291,7 @@ public class TimeUtils {
 
 		public String format(FormatType formatType) {
 			formatType = formatType == null ? FormatType.SHORT : formatType;
-			if (original == 0 && noneDisplay)
+			if (isNull() && noneDisplay)
 				return "None";
 
 			long years = this.years;
@@ -349,14 +353,14 @@ public class TimeUtils {
 
 	private interface TimeEnum {
 
-		int get();
+		long get();
 
-		default int x(int multiplier) {
+		default long x(int multiplier) {
 			return get() * multiplier;
 		}
 
-		default int x(double multiplier) {
-			return (int) (get() * multiplier);
+		default long x(double multiplier) {
+			return (long) (get() * multiplier);
 		}
 
 		default Duration duration(long multiplier) {
@@ -386,9 +390,9 @@ public class TimeUtils {
 		MONTH(DAY.get() * 30),
 		YEAR(DAY.get() * 365);
 
-		private final int value;
+		private final long value;
 
-		public int get() {
+		public long get() {
 			return value;
 		}
 
@@ -405,9 +409,9 @@ public class TimeUtils {
 		MONTH(DAY.get() * 30),
 		YEAR(DAY.get() * 365);
 
-		private final int value;
+		private final long value;
 
-		public int get() {
+		public long get() {
 			return value;
 		}
 
