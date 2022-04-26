@@ -242,7 +242,14 @@ public class AppCommandMeta<C extends AppCommand> {
 			}
 
 			public Object tryConvert(C command, OptionMapping option) {
-				checkRole(command.member(), role);
+				try {
+					checkRole(command.member(), role);
+				} catch (AppCommandException ex) {
+					if (required && isNullOrEmpty(defaultValue))
+						throw ex;
+					else
+						option = null;
+				}
 
 				if (required && option == null)
 					throw new AppCommandException(name + " is required");
