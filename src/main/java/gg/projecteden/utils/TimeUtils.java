@@ -141,36 +141,33 @@ public class TimeUtils {
 	public static class Timespan {
 		@Getter
 		private final long original;
-		private final boolean noneDisplay;
+		private final boolean noneDisplay, displayMillis;
 		private final FormatType formatType;
 		private long years, days, hours, minutes, seconds, millis;
 		@Getter
 		private final String rest;
 
 		@Builder
-		public Timespan(long millis, boolean noneDisplay, FormatType formatType, String rest) {
+		public Timespan(long millis, boolean noneDisplay, boolean displayMillis, FormatType formatType, String rest) {
 			this.original = millis;
 			this.millis = millis;
 			this.noneDisplay = noneDisplay;
+			this.displayMillis = displayMillis;
 			this.formatType = formatType == null ? FormatType.SHORT : formatType;
 			this.rest = rest;
 			calculate();
 		}
 
 		public static Timespan of(LocalDate from) {
-			return of(from.atStartOfDay());
+			return TimespanBuilder.of(from).build();
 		}
 
 		public static Timespan of(LocalDateTime from) {
-			LocalDateTime now = LocalDateTime.now();
-			if (from.isBefore(now))
-				return of(from, now);
-			else
-				return of(now, from);
+			return TimespanBuilder.of(from).build();
 		}
 
 		public static Timespan of(LocalDateTime from, LocalDateTime to) {
-			return ofMillis(from.until(to, ChronoUnit.MILLIS));
+			return TimespanBuilder.of(from, to).build();
 		}
 
 		public static Timespan ofSeconds(long seconds) {
@@ -198,6 +195,22 @@ public class TimeUtils {
 		}
 
 		public static class TimespanBuilder {
+
+			public static TimespanBuilder of(LocalDate from) {
+				return of(from.atStartOfDay());
+			}
+
+			public static TimespanBuilder of(LocalDateTime from) {
+				LocalDateTime now = LocalDateTime.now();
+				if (from.isBefore(now))
+					return of(from, now);
+				else
+					return of(now, from);
+			}
+
+			public static TimespanBuilder of(LocalDateTime from, LocalDateTime to) {
+				return ofMillis(from.until(to, ChronoUnit.MILLIS));
+			}
 
 			public static TimespanBuilder ofSeconds(long seconds) {
 				return Timespan.builder().millis(seconds * 1000);
@@ -245,6 +258,11 @@ public class TimeUtils {
 				}
 
 				return ofSeconds(0).rest(input);
+			}
+
+			public TimespanBuilder displayMillis() {
+				this.displayMillis = true;
+				return this;
 			}
 
 			@ToString.Include
@@ -311,7 +329,7 @@ public class TimeUtils {
 			if (minutes > 0)
 				result += minutes + formatType.get(TimespanElement.MINUTE, minutes);
 			if (result.length() == 0 || (years == 0 && days == 0 && hours == 0)) {
-				if (millis > 0)
+				if (displayMillis && millis > 0)
 					result += seconds + new DecimalFormat(".000").format(millis / 1000d) + formatType.get(TimespanElement.SECOND, seconds);
 				else
 					result += seconds + formatType.get(TimespanElement.SECOND, seconds);
