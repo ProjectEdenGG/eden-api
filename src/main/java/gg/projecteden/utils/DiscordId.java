@@ -3,6 +3,7 @@ package gg.projecteden.utils;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import net.dv8tion.jda.api.JDA;
+import net.dv8tion.jda.api.entities.BaseGuildMessageChannel;
 import net.dv8tion.jda.api.entities.Member;
 
 import java.util.Arrays;
@@ -18,7 +19,7 @@ public class DiscordId {
 	@AllArgsConstructor
 	public enum TextChannel {
 		INFO("819817990249644032"),
-		ANNOUNCEMENTS("133970047382061057"),
+		ANNOUNCEMENTS("133970047382061057", true),
 		CHANGELOG("819818214313689098"),
 		BOOSTS("846814263754620938"),
 
@@ -49,12 +50,20 @@ public class DiscordId {
 		;
 
 		private final String id;
+		private final boolean news;
 
-		public net.dv8tion.jda.api.entities.TextChannel get(JDA jda) {
-			return Guild.PROJECT_EDEN.get(jda).getTextChannelById(id);
+		TextChannel(String id) {
+			this(id, false);
 		}
 
-		public static TextChannel of(net.dv8tion.jda.api.entities.TextChannel textChannel) {
+		public BaseGuildMessageChannel get(JDA jda) {
+			if (news)
+				return Guild.PROJECT_EDEN.get(jda).getNewsChannelById(id);
+			else
+				return Guild.PROJECT_EDEN.get(jda).getTextChannelById(id);
+		}
+
+		public static TextChannel of(BaseGuildMessageChannel textChannel) {
 			return of(textChannel.getId());
 		}
 
