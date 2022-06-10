@@ -54,7 +54,7 @@ public class StringUtils {
 	}
 
 	public static String right(String string, int number) {
-		return string.substring(Math.max(string.length() - number, 0));
+		return string.substring(Math.min(string.length() - 1, Math.max(string.length() - number, 0)));
 	}
 
 	public static String left(String string, int number) {

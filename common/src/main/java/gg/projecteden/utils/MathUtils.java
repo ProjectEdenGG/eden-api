@@ -1,8 +1,11 @@
 package gg.projecteden.utils;
 
+import lombok.NoArgsConstructor;
+
 import java.util.Random;
 
-public final class MathUtils {
+@NoArgsConstructor
+public class MathUtils {
 
 	static public final float nanoToSec = 1 / 1000000000f;
 

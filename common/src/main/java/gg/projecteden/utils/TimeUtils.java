@@ -74,13 +74,21 @@ public class TimeUtils {
 		return LocalDate.from(DateTimeFormatter.ofPattern("M/d/yyyy").parse(input));
 	}
 
+	public static LocalDate parseShorterDate(String input) {
+		return LocalDate.from(DateTimeFormatter.ofPattern("M/d/yy").parse(input));
+	}
+
 	public static LocalDate parseDate(String input) {
+		try {
+			return parseShorterDate(input);
+		} catch (DateTimeParseException ignore) {
+		}
 		try {
 			return parseShortDate(input);
 		} catch (DateTimeParseException ignore) {
 		}
 		try {
-			return parseDate(input);
+			return LocalDate.parse(input);
 		} catch (DateTimeParseException ignore) {
 		}
 		throw new EdenException("Could not parse date, correct format is MM/DD/YYYY");
@@ -108,7 +116,7 @@ public class TimeUtils {
 
 		private final String shortLabel, mediumLabel, longLabel;
 
-		public int of(String input) {
+		public long of(String input) {
 			try {
 				double multiplier = Double.parseDouble(input.replaceAll("[^\\d.]+", ""));
 				return MillisTime.valueOf(name()).x(multiplier);
@@ -133,36 +141,33 @@ public class TimeUtils {
 	public static class Timespan {
 		@Getter
 		private final long original;
-		private final boolean noneDisplay;
+		private final boolean noneDisplay, displayMillis;
 		private final FormatType formatType;
 		private long years, days, hours, minutes, seconds, millis;
 		@Getter
 		private final String rest;
 
 		@Builder
-		public Timespan(long millis, boolean noneDisplay, FormatType formatType, String rest) {
+		public Timespan(long millis, boolean noneDisplay, boolean displayMillis, FormatType formatType, String rest) {
 			this.original = millis;
 			this.millis = millis;
 			this.noneDisplay = noneDisplay;
+			this.displayMillis = displayMillis;
 			this.formatType = formatType == null ? FormatType.SHORT : formatType;
 			this.rest = rest;
 			calculate();
 		}
 
 		public static Timespan of(LocalDate from) {
-			return of(from.atStartOfDay());
+			return TimespanBuilder.of(from).build();
 		}
 
 		public static Timespan of(LocalDateTime from) {
-			LocalDateTime now = LocalDateTime.now();
-			if (from.isBefore(now))
-				return of(from, now);
-			else
-				return of(now, from);
+			return TimespanBuilder.of(from).build();
 		}
 
 		public static Timespan of(LocalDateTime from, LocalDateTime to) {
-			return ofMillis(from.until(to, ChronoUnit.MILLIS));
+			return TimespanBuilder.of(from, to).build();
 		}
 
 		public static Timespan ofSeconds(long seconds) {
@@ -191,6 +196,22 @@ public class TimeUtils {
 
 		public static class TimespanBuilder {
 
+			public static TimespanBuilder of(LocalDate from) {
+				return of(from.atStartOfDay());
+			}
+
+			public static TimespanBuilder of(LocalDateTime from) {
+				LocalDateTime now = LocalDateTime.now();
+				if (from.isBefore(now))
+					return of(from, now);
+				else
+					return of(now, from);
+			}
+
+			public static TimespanBuilder of(LocalDateTime from, LocalDateTime to) {
+				return ofMillis(from.until(to, ChronoUnit.MILLIS));
+			}
+
 			public static TimespanBuilder ofSeconds(long seconds) {
 				return Timespan.builder().millis(seconds * 1000);
 			}
@@ -208,22 +229,22 @@ public class TimeUtils {
 			}
 
 			public static TimespanBuilder of(String input) {
-				if (!isNullOrEmpty(input)) {
-					input = input.replaceFirst("[tT]:", "");
-					if (Utils.isLong(input))
-						return ofSeconds(Long.parseLong(input));
+				if (isNullOrEmpty(input))
+					return ofMillis(0);
 
-					long millis = 0;
-					for (TimespanElement element : TimespanElement.values()) {
-						Matcher matcher = element.getPattern().matcher(input);
+				input = input.replaceFirst("[tT]:", "");
+				if (Utils.isLong(input))
+					return ofSeconds(Long.parseLong(input));
 
-						while (matcher.find())
-							millis += element.of(matcher.group());
-					}
-					return ofMillis(millis);
+				long millis = 0;
+				for (TimespanElement element : TimespanElement.values()) {
+					Matcher matcher = element.getPattern().matcher(input);
+
+					while (matcher.find())
+						millis += element.of(matcher.group());
 				}
 
-				return ofMillis(0);
+				return ofMillis(millis);
 			}
 
 			public static TimespanBuilder find(String input) {
@@ -237,6 +258,11 @@ public class TimeUtils {
 				}
 
 				return ofSeconds(0).rest(input);
+			}
+
+			public TimespanBuilder displayMillis() {
+				this.displayMillis = true;
+				return this;
 			}
 
 			@ToString.Include
@@ -269,6 +295,10 @@ public class TimeUtils {
 			return LocalDateTime.now().plus(original, ChronoUnit.MILLIS);
 		}
 
+		public LocalDateTime sinceNow() {
+			return LocalDateTime.now().minus(original, ChronoUnit.MILLIS);
+		}
+
 		public boolean isNull() {
 			return original == 0;
 		}
@@ -279,7 +309,7 @@ public class TimeUtils {
 
 		public String format(FormatType formatType) {
 			formatType = formatType == null ? FormatType.SHORT : formatType;
-			if (original == 0 && noneDisplay)
+			if (isNull() && noneDisplay)
 				return "None";
 
 			long years = this.years;
@@ -299,7 +329,7 @@ public class TimeUtils {
 			if (minutes > 0)
 				result += minutes + formatType.get(TimespanElement.MINUTE, minutes);
 			if (result.length() == 0 || (years == 0 && days == 0 && hours == 0)) {
-				if (millis > 0)
+				if (displayMillis && millis > 0)
 					result += seconds + new DecimalFormat(".000").format(millis / 1000d) + formatType.get(TimespanElement.SECOND, seconds);
 				else
 					result += seconds + formatType.get(TimespanElement.SECOND, seconds);
@@ -341,14 +371,14 @@ public class TimeUtils {
 
 	private interface TimeEnum {
 
-		int get();
+		long get();
 
-		default int x(int multiplier) {
+		default long x(int multiplier) {
 			return get() * multiplier;
 		}
 
-		default int x(double multiplier) {
-			return (int) (get() * multiplier);
+		default long x(double multiplier) {
+			return (long) (get() * multiplier);
 		}
 
 		default Duration duration(long multiplier) {
@@ -378,9 +408,9 @@ public class TimeUtils {
 		MONTH(DAY.get() * 30),
 		YEAR(DAY.get() * 365);
 
-		private final int value;
+		private final long value;
 
-		public int get() {
+		public long get() {
 			return value;
 		}
 
@@ -397,9 +427,9 @@ public class TimeUtils {
 		MONTH(DAY.get() * 30),
 		YEAR(DAY.get() * 365);
 
-		private final int value;
+		private final long value;
 
-		public int get() {
+		public long get() {
 			return value;
 		}
 

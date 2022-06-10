@@ -147,7 +147,8 @@ public record AppCommandRegistry(JDA jda, String packageName) {
 
 			guild.upsertCommand(command).submit().thenAccept(response -> {
 				success.accept("COMMAND");
-				setPrivilege.accept(response);
+				// TODO Replace with new system when available
+				// setPrivilege.accept(response);
 			}).exceptionally(ex -> {
 				failure.accept("COMMAND");
 				ex.printStackTrace();

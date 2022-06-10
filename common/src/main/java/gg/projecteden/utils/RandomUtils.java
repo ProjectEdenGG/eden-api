@@ -9,6 +9,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
 
 // lexi TODO: javadocs
 public class RandomUtils {
@@ -37,7 +38,17 @@ public class RandomUtils {
 	public static int randomInt(int min, int max) throws IllegalArgumentException {
 		if (min == max) return min;
 		if (min > max) throw new IllegalArgumentException("Min cannot be greater than max!");
-		return min + random.nextInt(max-min+1);
+		return min + random.nextInt(max - min + 1);
+	}
+
+	public static long randomLong(long max) {
+		return randomLong(0, max);
+	}
+
+	public static long randomLong(long min, long max) throws IllegalArgumentException {
+		if (min == max) return min;
+		if (min > max) throw new IllegalArgumentException("Min cannot be greater than max!");
+		return min + ThreadLocalRandom.current().nextLong(max - min + 1);
 	}
 
 	public static double randomDouble() {

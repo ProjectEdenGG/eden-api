@@ -109,9 +109,15 @@ public abstract class MongoService<T extends DatabaseObject> {
 
 	@SneakyThrows
 	public static <C> C deserialize(DBObject dbObject) {
-		final Class<C> className = (Class<C>) Class.forName((String) dbObject.get("className"));
-		final EntityCache entityCache = database.getMapper().createEntityCache();
-		return database.getMapper().fromDBObject(database, className, dbObject, entityCache);
+		final String className = (String) dbObject.get("className");
+		try {
+			final Class<C> clazz = (Class<C>) Class.forName(className);
+			final EntityCache entityCache = database.getMapper().createEntityCache();
+			return database.getMapper().fromDBObject(database, clazz, dbObject, entityCache);
+		} catch (ClassNotFoundException ex) {
+			Log.warn("Could not find class " + className);
+			return null;
+		}
 	}
 
 	public MongoCollection<Document> getCollection() {
