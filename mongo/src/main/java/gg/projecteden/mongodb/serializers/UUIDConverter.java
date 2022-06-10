@@ -8,7 +8,6 @@ import lombok.NoArgsConstructor;
 
 import java.util.UUID;
 
-@NoArgsConstructor
 public class UUIDConverter extends TypeConverter implements SimpleValueConverter {
 
 	public UUIDConverter() {
