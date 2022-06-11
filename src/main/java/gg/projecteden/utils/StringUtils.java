@@ -140,10 +140,11 @@ public class StringUtils {
 		}
 	}
 
+	protected static final NumberFormat numberFormat = NumberFormat.getInstance();
 	protected static final NumberFormat moneyFormat = NumberFormat.getCurrencyInstance();
 
 	public static String pretty(Number number) {
-		String format = trimFirst(moneyFormat.format(number));
+		String format = numberFormat.format(number);
 		if (format.endsWith(".00"))
 			format = left(format, format.length() - 3);
 
@@ -151,9 +152,11 @@ public class StringUtils {
 	}
 
 	public static String prettyMoney(Number number) {
-		if (number == null)
-			return null;
-		return "$" + pretty(number);
+		String format = moneyFormat.format(number);
+		if (format.endsWith(".00"))
+			format = left(format, format.length() - 3);
+
+		return format;
 	}
 
 	public static String stripTrailingZeros(String number) {
