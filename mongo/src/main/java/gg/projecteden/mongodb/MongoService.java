@@ -39,8 +39,8 @@ import java.util.concurrent.Executors;
 import java.util.function.Consumer;
 
 import static com.mongodb.MongoClient.getDefaultCodecRegistry;
+import static gg.projecteden.utils.ReflectionUtils.subTypesOf;
 import static gg.projecteden.utils.UUIDUtils.UUID0;
-import static gg.projecteden.utils.Utils.subTypesOf;
 
 public abstract class MongoService<T extends DatabaseObject> {
 	protected static Datastore database;

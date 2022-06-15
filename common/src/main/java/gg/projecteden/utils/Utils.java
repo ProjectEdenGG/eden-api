@@ -2,9 +2,6 @@ package gg.projecteden.utils;
 
 import gg.projecteden.annotations.Disabled;
 import gg.projecteden.annotations.Environments;
-import io.github.classgraph.ClassGraph;
-import io.github.classgraph.ClassInfo;
-import io.github.classgraph.ScanResult;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.SneakyThrows;
@@ -15,12 +12,9 @@ import okhttp3.ResponseBody;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.reflections.Reflections;
-import org.reflections.util.ConfigurationBuilder;
 
 import java.io.File;
 import java.io.InputStream;
-import java.lang.annotation.Annotation;
 import java.lang.reflect.Array;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -46,8 +40,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Scanner;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiFunction;
 import java.util.function.BiPredicate;
 import java.util.function.BooleanSupplier;
@@ -58,47 +50,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class Utils {
-
-	public static Reflections reflectionsOf(String... packageNames) {
-		return new Reflections(new ConfigurationBuilder().forPackages(packageNames));
-	}
-
-	private static final Map<String, ScanResult> SCAN_CACHE = new ConcurrentHashMap<>();
-
-	public static <T> Set<Class<? extends T>> subTypesOf(Class<T> superclass, String... packages) {
-		return getClasses(packages, subclass -> {
-			if (superclass.isInterface())
-				return subclass.implementsInterface(superclass);
-			else
-				return subclass.extendsSuperclass(superclass);
-		});
-	}
-
-	public static <T> Set<Class<? extends T>> typesAnnotatedWith(Class<? extends Annotation> annotation, String... packages) {
-		return getClasses(packages, impl -> impl.hasAnnotation(annotation));
-	}
-
-	private static ScanResult scan(String[] packages) {
-		return SCAN_CACHE.computeIfAbsent(getCacheKey(packages), $ -> new ClassGraph()
-				.acceptPackages(packages)
-				.enableAllInfo()
-				.initializeLoadedClasses()
-				.scan());
-	}
-
-	@NotNull
-	private static String getCacheKey(String[] packages) {
-		return Arrays.stream(packages).sorted().collect(Collectors.joining(":"));
-	}
-
-	@SuppressWarnings("unchecked")
-	private static <T> Set<Class<? extends T>> getClasses(String[] packages, Predicate<ClassInfo> filter) {
-		return scan(packages).getAllClasses().stream()
-				.filter(filter)
-				.map(ClassInfo::loadClass)
-				.map(clazz -> (Class<? extends T>) clazz)
-				.collect(Collectors.toSet());
-	}
 
 	public static <K extends Comparable<? super K>, V> LinkedHashMap<K, V> sortByKey(Map<K, V> map) {
 		return collect(map.entrySet().stream().sorted(Entry.comparingByKey()));
@@ -212,7 +163,7 @@ public class Utils {
 	public static Map<String, String> dump(Object object) {
 		Map<String, String> output = new HashMap<>();
 		List<Method> methods = new ArrayList<>() {{
-			for (Class<?> superclass : Utils.getSuperclasses(object.getClass()))
+			for (Class<?> superclass : ReflectionUtils.superclassesOf(object.getClass()))
 				addAll(Arrays.asList(superclass.getDeclaredMethods()));
 		}};
 
@@ -369,23 +320,6 @@ public class Utils {
 
 	public static boolean isBoolean(Parameter parameter) {
 		return parameter.getType() == Boolean.class || parameter.getType() == Boolean.TYPE;
-	}
-
-	/**
-	 * Returns a list of superclasses, including the provided class
-	 *
-	 * @param clazz subclass
-	 * @return superclasses
-	 */
-	public static <T> List<Class<? extends T>> getSuperclasses(Class<? extends T> clazz) {
-		List<Class<? extends T>> superclasses = new ArrayList<>();
-		while (clazz.getSuperclass() != Object.class) {
-			superclasses.add(clazz);
-
-			clazz = (Class<? extends T>) clazz.getSuperclass();
-		}
-
-		return superclasses;
 	}
 
 	/**

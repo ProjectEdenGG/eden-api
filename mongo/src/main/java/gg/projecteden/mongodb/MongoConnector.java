@@ -20,8 +20,8 @@ import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.List;
 
-import static gg.projecteden.utils.Utils.subTypesOf;
-import static gg.projecteden.utils.Utils.typesAnnotatedWith;
+import static gg.projecteden.utils.ReflectionUtils.subTypesOf;
+import static gg.projecteden.utils.ReflectionUtils.typesAnnotatedWith;
 
 public class MongoConnector {
 	protected static final Morphia morphia = new Morphia();

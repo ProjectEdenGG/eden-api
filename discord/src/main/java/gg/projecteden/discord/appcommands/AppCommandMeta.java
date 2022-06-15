@@ -1,6 +1,5 @@
 package gg.projecteden.discord.appcommands;
 
-import gg.projecteden.discord.appcommands.AppCommandRegistry.*;
 import gg.projecteden.discord.appcommands.annotations.Choices;
 import gg.projecteden.discord.appcommands.annotations.Command;
 import gg.projecteden.discord.appcommands.annotations.Default;
@@ -11,7 +10,7 @@ import gg.projecteden.discord.appcommands.annotations.RequiredRole;
 import gg.projecteden.discord.appcommands.exceptions.AppCommandException;
 import gg.projecteden.discord.appcommands.exceptions.AppCommandMisconfiguredException;
 import gg.projecteden.exceptions.EdenException;
-import gg.projecteden.utils.Utils;
+import gg.projecteden.utils.ReflectionUtils;
 import lombok.Data;
 import lombok.SneakyThrows;
 import net.dv8tion.jda.api.entities.Member;
@@ -40,11 +39,14 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static gg.projecteden.discord.appcommands.AppCommandRegistry.*;
+import static gg.projecteden.discord.appcommands.AppCommandRegistry.ANNOTATION_HANDLERS;
+import static gg.projecteden.discord.appcommands.AppCommandRegistry.AppCommandArgumentInstance;
+import static gg.projecteden.discord.appcommands.AppCommandRegistry.COMMANDS;
+import static gg.projecteden.discord.appcommands.AppCommandRegistry.OPTION_CONVERTERS;
+import static gg.projecteden.discord.appcommands.AppCommandRegistry.loadChoices;
+import static gg.projecteden.discord.appcommands.AppCommandRegistry.resolveOptionType;
 import static gg.projecteden.utils.Nullables.isNullOrEmpty;
 import static gg.projecteden.utils.StringUtils.replaceLast;
-import static org.reflections.ReflectionUtils.getAllMethods;
-import static org.reflections.ReflectionUtils.withAnnotation;
 
 @Data
 public class AppCommandMeta<C extends AppCommand> {
@@ -80,7 +82,7 @@ public class AppCommandMeta<C extends AppCommand> {
 
 		this.methods = new HashMap<>() {{
 			new HashMap<String, Method>() {{
-				getAllMethods(clazz, withAnnotation(Command.class)).forEach(method -> {
+				ReflectionUtils.methodsAnnotatedWith(clazz, Command.class).forEach(method -> {
 					String key = method.getName() + "(" + Arrays.stream(method.getParameterTypes()).map(Class::getName).collect(Collectors.joining(",")) + ")";
 					if (!containsKey(key))
 						put(key, method);
@@ -359,7 +361,7 @@ public class AppCommandMeta<C extends AppCommand> {
 	@Nullable
 	private static <A extends Annotation> A getAnnotation(Class<?> clazz, Class<A> annotation) {
 		A result = null;
-		for (var superclass : Utils.getSuperclasses(clazz)) {
+		for (var superclass : ReflectionUtils.superclassesOf(clazz)) {
 			result = superclass.getAnnotation(annotation);
 			if (result != null)
 				break;

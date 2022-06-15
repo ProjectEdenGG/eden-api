@@ -24,7 +24,6 @@ import net.dv8tion.jda.api.interactions.commands.privileges.CommandPrivilege;
 import net.dv8tion.jda.api.interactions.commands.privileges.CommandPrivilege.Type;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.reflections.Reflections;
 
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
@@ -41,7 +40,7 @@ import java.util.stream.Collectors;
 
 import static gg.projecteden.discord.appcommands.AppCommandHandler.parseMentions;
 import static gg.projecteden.utils.Nullables.isNullOrEmpty;
-import static gg.projecteden.utils.Utils.subTypesOf;
+import static gg.projecteden.utils.ReflectionUtils.subTypesOf;
 
 public record AppCommandRegistry(JDA jda, String packageName) {
 	static final Map<String, AppCommandMeta<?>> COMMANDS = new HashMap<>();

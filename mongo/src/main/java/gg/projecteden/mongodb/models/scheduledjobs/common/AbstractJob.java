@@ -15,7 +15,6 @@ import lombok.Getter;
 import lombok.NonNull;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.reflections.Reflections;
 
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
@@ -26,8 +25,8 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
+import static gg.projecteden.utils.ReflectionUtils.subTypesOf;
 import static gg.projecteden.utils.StringUtils.camelCase;
-import static gg.projecteden.utils.Utils.subTypesOf;
 
 @Data
 public abstract class AbstractJob {
