@@ -36,6 +36,9 @@ public class ReflectionUtils {
 
 	public static <T> Set<Class<? extends T>> subTypesOf(Class<T> superclass, String... packages) {
 		return getClasses(packages, subclass -> {
+			if (!Utils.canEnable(subclass))
+				return false;
+
 			if (superclass.isInterface())
 				return subclass.implementsInterface(superclass);
 			else
@@ -47,6 +50,7 @@ public class ReflectionUtils {
 	public static <T> Set<Class<? extends T>> typesAnnotatedWith(Class<? extends Annotation> annotation, String... packages) {
 		try (var scan = scanPackages(packages).scan()) {
 			return scan.getClassesWithAnnotation(annotation).stream()
+					.filter(Utils::canEnable)
 					.map(ClassInfo::loadClass)
 					.map(clazz -> (Class<? extends T>) clazz)
 					.collect(Collectors.toSet());

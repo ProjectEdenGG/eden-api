@@ -3,6 +3,7 @@ package gg.projecteden.utils;
 import gg.projecteden.EdenAPI;
 
 import java.util.Arrays;
+import java.util.List;
 
 public enum Env {
 	DEV,
@@ -10,6 +11,10 @@ public enum Env {
 	PROD;
 
 	public static boolean applies(Env... envs) {
-		return Arrays.asList(envs).contains(EdenAPI.get().getEnv());
+		return applies(Arrays.asList(envs));
+	}
+
+	public static boolean applies(List<Env> envs) {
+		return envs.contains(EdenAPI.get().getEnv());
 	}
 }

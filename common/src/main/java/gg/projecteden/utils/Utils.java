@@ -2,6 +2,9 @@ package gg.projecteden.utils;
 
 import gg.projecteden.annotations.Disabled;
 import gg.projecteden.annotations.Environments;
+import io.github.classgraph.AnnotationEnumValue;
+import io.github.classgraph.AnnotationInfo;
+import io.github.classgraph.ClassInfo;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.SneakyThrows;
@@ -225,6 +228,30 @@ public class Utils {
 			return false;
 		if (clazz.getAnnotation(Environments.class) != null && !Env.applies(clazz.getAnnotation(Environments.class).value()))
 			return false;
+
+		return true;
+	}
+
+	public static boolean canEnable(ClassInfo clazz) {
+		if (clazz.getSimpleName().startsWith("_"))
+			return false;
+		if (Modifier.isAbstract(clazz.getModifiers()))
+			return false;
+		if (Modifier.isInterface(clazz.getModifiers()))
+			return false;
+		if (clazz.getAnnotationInfo(Disabled.class) != null)
+			return false;
+
+		final AnnotationInfo environments = clazz.getAnnotationInfo(Environments.class);
+		if (environments != null) {
+			final List<Env> envs = Arrays.stream((Object[]) environments.getParameterValues().get("value").getValue())
+				.map(obj -> (AnnotationEnumValue) obj)
+				.map(value -> Env.valueOf(value.getValueName()))
+				.toList();
+
+			if (!Env.applies(envs))
+				return false;
+		}
 
 		return true;
 	}
