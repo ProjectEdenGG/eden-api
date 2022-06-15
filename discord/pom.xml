@@ -16,7 +16,7 @@
         <dependency>
             <groupId>gg.projecteden</groupId>
             <artifactId>eden-common</artifactId>
-            <version>2.0.14-SNAPSHOT</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>net.dv8tion</groupId>
