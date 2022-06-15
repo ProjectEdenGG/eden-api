@@ -30,6 +30,7 @@ public class ReflectionUtils {
 			clazz = (Class<? extends T>) clazz.getSuperclass();
 		}
 
+		superclasses.add(clazz);
 		return superclasses;
 	}
 
@@ -53,11 +54,14 @@ public class ReflectionUtils {
 	}
 
 	public static Set<Method> methodsAnnotatedWith(Class<?> clazz, Class<? extends Annotation> annotation) {
-		return new HashSet<>() {{
+		final HashSet<Method> methods = new HashSet<>() {{
 			for (Method method : getAllMethods(clazz))
 				if (method.getAnnotation(annotation) != null)
 					add(method);
 		}};
+		if (clazz.getSimpleName().contains("Nexus"))
+			System.out.println("Methods annotated with " + annotation.getSimpleName() + ": " + methods.size());
+		return methods;
 	}
 
 	private static ClassGraph scanPackages(String... packages) {
@@ -81,9 +85,16 @@ public class ReflectionUtils {
 
 	private static Set<Method> getAllMethods(Class<?> clazz) {
 		return new HashSet<>(new HashMap<String, Method>() {{
-			for (Class<?> clazz : Utils.reverse(superclassesOf(clazz)))
+			final List<Class<?>> superclasses = Utils.reverse(superclassesOf(clazz));
+			if (clazz.getSimpleName().contains("Nexus"))
+				System.out.println("Superclasses: " + superclasses.stream().map(Class::getSimpleName).collect(Collectors.joining(", ")));
+
+			for (Class<?> clazz : superclasses)
 				for (Method method : clazz.getMethods())
 					put(getMethodKey(method), method);
+
+			if (clazz.getSimpleName().contains("Nexus"))
+				System.out.println("Methods: " + size());
 		}}.values());
 	}
 
