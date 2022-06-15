@@ -79,6 +79,11 @@ public class Utils {
 		return reverse;
 	}
 
+	public static <T> List<T> reverse(List<T> list) {
+		Collections.reverse(list);
+		return list;
+	}
+
 	@Data
 	@AllArgsConstructor
 	public static class MinMaxResult<T> {

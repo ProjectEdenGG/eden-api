@@ -2,24 +2,20 @@ package gg.projecteden.utils;
 
 import io.github.classgraph.ClassGraph;
 import io.github.classgraph.ClassInfo;
-import io.github.classgraph.MethodInfo;
-import io.github.classgraph.ScanResult;
 import org.jetbrains.annotations.NotNull;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 public class ReflectionUtils {
-	private static final Map<String, ScanResult> PACKAGE_SCAN_CACHE = new ConcurrentHashMap<>();
-	private static final Map<String, ScanResult> CLASS_SCAN_CACHE = new ConcurrentHashMap<>();
 
 	/**
 	 * Returns a list of superclasses, including the provided class
@@ -46,38 +42,35 @@ public class ReflectionUtils {
 		});
 	}
 
+	@SuppressWarnings("unchecked")
 	public static <T> Set<Class<? extends T>> typesAnnotatedWith(Class<? extends Annotation> annotation, String... packages) {
-		return getClasses(packages, clazz -> clazz.hasAnnotation(annotation));
+		try (var scan = scanPackages(packages).scan()) {
+			return scan.getClassesWithAnnotation(annotation).stream()
+					.map(ClassInfo::loadClass)
+					.map(clazz -> (Class<? extends T>) clazz)
+					.collect(Collectors.toSet());
+		}
 	}
 
 	public static Set<Method> methodsAnnotatedWith(Class<?> clazz, Class<? extends Annotation> annotation) {
-		return getMethods(clazz, method -> method.hasAnnotation(annotation));
+		return new HashSet<>() {{
+			for (Method method : getAllMethods(clazz))
+				if (method.getAnnotation(annotation) != null)
+					add(method);
+		}};
 	}
 
-	private static ScanResult scanPackages(String... packages) {
-		return PACKAGE_SCAN_CACHE.computeIfAbsent(getCacheKey(packages), $ -> new ClassGraph()
+	private static ClassGraph scanPackages(String... packages) {
+		return new ClassGraph()
 				.acceptPackages(packages)
-				.enableAllInfo()
-				.initializeLoadedClasses()
-				.scan());
-	}
-
-	private static ScanResult scanClasses(String... classes) {
-		return PACKAGE_SCAN_CACHE.computeIfAbsent(getCacheKey(classes), $ -> new ClassGraph()
-				.acceptClasses(classes)
-				.enableAllInfo()
-				.initializeLoadedClasses()
-				.scan());
-	}
-
-	@NotNull
-	private static String getCacheKey(String[] packages) {
-		return Arrays.stream(packages).sorted().collect(Collectors.joining(":"));
+				.enableClassInfo()
+				.enableAnnotationInfo()
+				.initializeLoadedClasses();
 	}
 
 	@SuppressWarnings("unchecked")
 	private static <T> Set<Class<? extends T>> getClasses(String[] packages, Predicate<ClassInfo> filter) {
-		try (ScanResult scan = scanPackages(packages)) {
+		try (var scan = scanPackages(packages).scan()) {
 			return scan.getAllClasses().stream()
 					.filter(filter)
 					.map(ClassInfo::loadClass)
@@ -86,23 +79,21 @@ public class ReflectionUtils {
 		}
 	}
 
-	private static <T> Set<Method> getMethods(Class<?> clazz, Predicate<MethodInfo> filter) {
-		try (ScanResult scan = scanClasses(clazz.getName())) {
-			return scan.getClassInfo(clazz.getName()).getMethodInfo().stream()
-					.filter(filter)
-					.map(MethodInfo::loadClassAndGetMethod)
-					.collect(Collectors.toSet());
-		}
+	private static Set<Method> getAllMethods(Class<?> clazz) {
+		return new HashSet<>(new HashMap<String, Method>() {{
+			for (Class<?> clazz : Utils.reverse(superclassesOf(clazz)))
+				for (Method method : clazz.getMethods())
+					put(getMethodKey(method), method);
+		}}.values());
 	}
 
-	private static <T> Set<Method> getAllMethods(Class<?> clazz, Predicate<MethodInfo> filter) {
-		List<String> classes = superclassesOf(clazz).stream().map(Class::getName).toList();
-		try (ScanResult scan = scanClasses(classes.toArray(String[]::new))) {
-			return scan.getClassInfo(clazz.getName()).getMethodInfo().stream()
-					.filter(filter)
-					.map(MethodInfo::loadClassAndGetMethod)
-					.collect(Collectors.toSet());
-		}
+	@NotNull
+	private static String getMethodKey(Method method) {
+		final String params = Arrays.stream(method.getParameters())
+				.map(parameter -> parameter.getType().getSimpleName())
+				.collect(Collectors.joining(","));
+
+		return "%s(%s)".formatted(method.getName(), params);
 	}
 
 }
