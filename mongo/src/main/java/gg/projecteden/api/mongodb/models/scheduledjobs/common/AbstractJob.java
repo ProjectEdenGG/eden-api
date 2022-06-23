@@ -49,7 +49,7 @@ public abstract class AbstractJob {
 	}
 
 	@Getter
-	private static Set<Class<? extends AbstractJob>> subclasses = subTypesOf(AbstractJob.class, EdenAPI.class.getPackageName());
+	private static Set<Class<? extends AbstractJob>> subclasses = subTypesOf(AbstractJob.class, "gg.projecteden");
 
 	public void setStatus(JobStatus status) {
 		jobs().get(this.status).remove(this);
