@@ -14,23 +14,28 @@ public class EnumUtils {
 		throw new IllegalArgumentException();
 	}
 
-	public static <T> T next(Class<? extends T> clazz, int ordinal) {
+	private static <T extends IterableEnum> boolean hasNext(Class<? extends T> clazz, int ordinal) {
+		T[] values = clazz.getEnumConstants();
+		return ordinal + 1 < values.length;
+	}
+
+	public static <T extends IterableEnum> T next(Class<? extends T> clazz, int ordinal) {
 		T[] values = clazz.getEnumConstants();
 		return values[Math.min(values.length - 1, ordinal + 1 % values.length)];
 	}
 
-	public static <T> T previous(Class<? extends T> clazz, int ordinal) {
+	public static <T extends IterableEnum> T previous(Class<? extends T> clazz, int ordinal) {
 		T[] values = clazz.getEnumConstants();
 		return values[Math.max(0, ordinal - 1 % values.length)];
 	}
 
-	public static <T> T nextWithLoop(Class<? extends T> clazz, int ordinal) {
+	public static <T extends IterableEnum> T nextWithLoop(Class<? extends T> clazz, int ordinal) {
 		T[] values = clazz.getEnumConstants();
 		int next = ordinal + 1 % values.length;
 		return next >= values.length ? values[0] : values[next];
 	}
 
-	public static <T> T previousWithLoop(Class<? extends T> clazz, int ordinal) {
+	public static <T extends IterableEnum> T previousWithLoop(Class<? extends T> clazz, int ordinal) {
 		T[] values = clazz.getEnumConstants();
 		int previous = ordinal - 1 % values.length;
 		return previous < 0 ? values[values.length - 1] : values[previous];
@@ -97,10 +102,14 @@ public class EnumUtils {
 		};
 	}
 
-	public interface IteratableEnum {
+	public interface IterableEnum {
 		int ordinal();
 
 		String name();
+
+		default boolean hasNext() {
+			return EnumUtils.hasNext(this.getClass(), ordinal());
+		}
 
 		default <T extends Enum<?>> T next() {
 			return (T) EnumUtils.next(this.getClass(), ordinal());
@@ -120,3 +129,4 @@ public class EnumUtils {
 	}
 
 }
+
