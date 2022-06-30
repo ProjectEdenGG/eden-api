@@ -3,6 +3,7 @@ package gg.projecteden.api.mongodb.models.nerd;
 import dev.morphia.annotations.Converters;
 import dev.morphia.annotations.Entity;
 import dev.morphia.annotations.Id;
+import dev.morphia.annotations.PostLoad;
 import gg.projecteden.api.common.utils.UUIDUtils;
 import gg.projecteden.api.interfaces.HasUniqueId;
 import gg.projecteden.api.mongodb.interfaces.PlayerOwnedObject;
@@ -18,9 +19,13 @@ import org.jetbrains.annotations.NotNull;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+
+import static gg.projecteden.api.common.utils.Nullables.isNullOrEmpty;
 
 @Data
 @Entity(value = "nerd", noClassnameStored = true)
@@ -45,11 +50,13 @@ public class Nerd implements PlayerOwnedObject {
 	protected LocalDate promotionDate;
 	protected String about;
 	protected boolean meetMeVideo;
-	protected Set<Pronoun> pronouns = new HashSet<>();
-	protected static final LocalDateTime EARLIEST_JOIN = LocalDateTime.of(2015, 1, 1, 0, 0);
 
+	protected Set<Pronoun> pronouns = new HashSet<>();
+	protected List<String> preferredNames = new ArrayList<>();
 	protected Set<String> aliases = new HashSet<>();
 	protected Set<String> pastNames = new HashSet<>();
+
+	protected static final LocalDateTime EARLIEST_JOIN = LocalDateTime.of(2015, 1, 1, 0, 0);
 
 	public static Nerd of(String name) {
 		return new NerdService().get(name);
@@ -61,6 +68,14 @@ public class Nerd implements PlayerOwnedObject {
 
 	public static Nerd of(UUID uuid) {
 		return new NerdService().get(uuid);
+	}
+
+	@PostLoad
+	void fix() {
+		if (!isNullOrEmpty(preferredName)) {
+			preferredNames.add(preferredName);
+			preferredName = null;
+		}
 	}
 
 	public @NotNull String getName() {
@@ -96,6 +111,10 @@ public class Nerd implements PlayerOwnedObject {
 					return pronoun;
 			return null;
 		}
+	}
+
+	public List<String> getFilteredPreferredNames() {
+		return preferredNames.stream().filter(name -> !name.equalsIgnoreCase(getNickname())).toList();
 	}
 
 }
