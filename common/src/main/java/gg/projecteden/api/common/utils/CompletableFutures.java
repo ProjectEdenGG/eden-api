@@ -4,7 +4,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -58,7 +58,7 @@ public class CompletableFutures {
 			values[i] = map.get(keys.get(i)).toCompletableFuture();
 
 		return CompletableFuture.allOf(values).thenApply($ -> {
-			final Map<U, T> result = new HashMap<>(values.length);
+			final Map<U, T> result = new LinkedHashMap<>(values.length);
 			for (int i = 0; i < values.length; i++)
 				result.put(keys.get(i), values[i].join());
 			return result;
