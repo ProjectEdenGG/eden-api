@@ -154,18 +154,15 @@ public abstract class MongoService<T extends DatabaseObject> {
 	}
 
 	public void saveCache(int threadCount) {
-		saveCacheSync(threadCount);
-	}
-
-	public void saveCacheSync() {
-		saveCacheSync(100);
-	}
-
-	public void saveCacheSync(int threadCount) {
 		ExecutorService executor = Executors.newFixedThreadPool(threadCount);
 
 		for (T object : new ArrayList<>(getCache().values()))
 			executor.submit(() -> saveSync(object));
+	}
+
+	public void saveCacheSync() {
+		for (T object : new ArrayList<>(getCache().values()))
+			saveSync(object);
 	}
 
 	private static final JsonWriterSettings jsonWriterSettings = JsonWriterSettings.builder().indent(true).build();
