@@ -1,5 +1,6 @@
 package gg.projecteden.api.common.utils;
 
+import gg.projecteden.api.common.EdenAPI;
 import io.github.classgraph.ClassGraph;
 import io.github.classgraph.ClassInfo;
 import org.jetbrains.annotations.NotNull;
@@ -72,6 +73,7 @@ public class ReflectionUtils {
 				.acceptPackages(packages)
 				.enableClassInfo()
 				.enableAnnotationInfo()
+				.overrideClassLoaders(EdenAPI.get().getClassLoader())
 				.initializeLoadedClasses();
 	}
 
