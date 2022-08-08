@@ -37,7 +37,7 @@ public class RandomUtils {
 
 	public static int randomInt(int min, int max) throws IllegalArgumentException {
 		if (min == max) return min;
-		if (min > max) throw new IllegalArgumentException("Min cannot be greater than max!");
+		if (min > max) throw new IllegalArgumentException("Min (" + min + ") cannot be greater than max (" + max + ")!");
 		return min + random.nextInt(max - min + 1);
 	}
 
@@ -47,7 +47,7 @@ public class RandomUtils {
 
 	public static long randomLong(long min, long max) throws IllegalArgumentException {
 		if (min == max) return min;
-		if (min > max) throw new IllegalArgumentException("Min cannot be greater than max!");
+		if (min > max) throw new IllegalArgumentException("Min (" + min + ") cannot be greater than max (" + max + ")!");
 		return min + ThreadLocalRandom.current().nextLong(max - min + 1);
 	}
 
@@ -61,7 +61,7 @@ public class RandomUtils {
 
 	public static double randomDouble(double min, double max) throws IllegalArgumentException {
 		if (min == max) return min;
-		if (min > max) throw new IllegalArgumentException("Min cannot be greater than max!");
+		if (min > max) throw new IllegalArgumentException("Min (" + min + ") cannot be greater than max (" + max + ")!");
 		return min + (max - min) * random.nextDouble();
 	}
 
