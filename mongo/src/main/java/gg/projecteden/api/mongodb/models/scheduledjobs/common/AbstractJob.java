@@ -4,12 +4,15 @@ import com.cronutils.model.CronType;
 import com.cronutils.model.definition.CronDefinitionBuilder;
 import com.cronutils.model.time.ExecutionTime;
 import com.cronutils.parser.CronParser;
+import dev.morphia.annotations.Converters;
 import gg.projecteden.api.common.EdenAPI;
 import gg.projecteden.api.common.annotations.Async;
 import gg.projecteden.api.common.exceptions.EdenException;
 import gg.projecteden.api.common.utils.Log;
 import gg.projecteden.api.mongodb.models.scheduledjobs.ScheduledJobs;
 import gg.projecteden.api.mongodb.models.scheduledjobs.ScheduledJobsService;
+import gg.projecteden.api.mongodb.serializers.LocalDateTimeConverter;
+import gg.projecteden.api.mongodb.serializers.UUIDConverter;
 import lombok.Data;
 import lombok.Getter;
 import lombok.NonNull;
@@ -29,6 +32,7 @@ import static gg.projecteden.api.common.utils.ReflectionUtils.subTypesOf;
 import static gg.projecteden.api.common.utils.StringUtils.camelCase;
 
 @Data
+@Converters({UUIDConverter.class, LocalDateTimeConverter.class})
 public abstract class AbstractJob {
 	@NonNull
 	protected UUID id;
