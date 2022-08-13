@@ -8,8 +8,10 @@ import dev.morphia.mapping.MappedField;
 import dev.morphia.mapping.Mapper;
 import gg.projecteden.api.mongodb.MongoPlayerService;
 import gg.projecteden.api.mongodb.models.scheduledjobs.common.AbstractJob;
+import lombok.NoArgsConstructor;
 import lombok.SneakyThrows;
 
+@NoArgsConstructor
 public class JobConverter extends TypeConverter implements SimpleValueConverter {
 
 	public JobConverter(Mapper mapper) {
