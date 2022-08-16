@@ -1,4 +1,4 @@
-package gg.projecteden.api.common;
+package gg.projecteden.api.mongodb;
 
 import gg.projecteden.api.common.utils.Env;
 import lombok.Builder;

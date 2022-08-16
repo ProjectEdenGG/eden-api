@@ -69,12 +69,16 @@ public class ReflectionUtils {
 	}
 
 	private static ClassGraph scanPackages(String... packages) {
-		return new ClassGraph()
+		final ClassGraph scanner = new ClassGraph()
 				.acceptPackages(packages)
 				.enableClassInfo()
 				.enableAnnotationInfo()
-				.overrideClassLoaders(EdenAPI.get().getClassLoader())
 				.initializeLoadedClasses();
+
+		if (EdenAPI.get().getClassLoader() != null)
+			scanner.overrideClassLoaders(EdenAPI.get().getClassLoader());
+
+		return scanner;
 	}
 
 	@SuppressWarnings("unchecked")

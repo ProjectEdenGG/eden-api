@@ -31,10 +31,8 @@ public abstract class EdenAPI {
 
 	abstract public Env getEnv();
 
-	abstract public DatabaseConfig getDatabaseConfig();
-
 	public ClassLoader getClassLoader() {
-		return getClass().getClassLoader();
+		return null;
 	}
 
 	public abstract void shutdown();

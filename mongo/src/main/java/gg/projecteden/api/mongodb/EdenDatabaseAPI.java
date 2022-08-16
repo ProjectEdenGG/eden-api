@@ -14,6 +14,8 @@ public abstract class EdenDatabaseAPI extends EdenAPI {
 		MongoConnector.shutdown();
 	}
 
+	abstract public DatabaseConfig getDatabaseConfig();
+
 	public Collection<? extends Class<? extends TypeConverter>> getDefaultMongoConverters() {
 		return subTypesOf(TypeConverter.class, MongoConnector.class.getPackageName() + ".serializers");
 	}
