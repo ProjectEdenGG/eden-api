@@ -20,7 +20,6 @@ import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.List;
 
-import static gg.projecteden.api.common.utils.ReflectionUtils.subTypesOf;
 import static gg.projecteden.api.common.utils.ReflectionUtils.typesAnnotatedWith;
 
 public class MongoConnector {
@@ -47,8 +46,11 @@ public class MongoConnector {
 		datastore = morphia.createDatastore(mongoClient, database);
 		datastore.ensureIndexes();
 
-		List<Class<? extends TypeConverter>> classes = new ArrayList<>(subTypesOf(TypeConverter.class, MongoConnector.class.getPackage().getName() + ".serializers"));
-		EdenAPI.get(EdenDatabaseAPI.class).ifPresent(api -> classes.addAll(api.getMongoConverters()));
+		List<Class<? extends TypeConverter>> classes = new ArrayList<>();
+		EdenAPI.getAs(EdenDatabaseAPI.class).ifPresent(api -> {
+			classes.addAll(api.getDefaultMongoConverters());
+			classes.addAll(api.getMongoConverters());
+		});
 
 		for (Class<? extends TypeConverter> clazz : classes) {
 			try {

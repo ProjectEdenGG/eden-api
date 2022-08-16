@@ -13,7 +13,7 @@ public abstract class EdenAPI {
 		return instance;
 	}
 
-	public static <T extends EdenAPI> Optional<T> get(Class<T> clazz) {
+	public static <T extends EdenAPI> Optional<T> getAs(Class<T> clazz) {
 		if (clazz.isInstance(instance)) {
 			//noinspection unchecked
 			return Optional.of((T) instance);
