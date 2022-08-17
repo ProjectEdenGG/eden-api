@@ -32,7 +32,7 @@ public abstract class AppCommand {
 	}
 
 	public TextChannel channel() {
-		return event.getEvent().getTextChannel();
+		return event.getEvent().getGuildChannel().asTextChannel();
 	}
 
 	public Category category() {

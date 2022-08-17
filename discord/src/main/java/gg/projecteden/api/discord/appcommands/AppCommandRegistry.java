@@ -9,19 +9,25 @@ import lombok.Data;
 import lombok.NonNull;
 import lombok.SneakyThrows;
 import net.dv8tion.jda.api.JDA;
+import net.dv8tion.jda.api.entities.AudioChannel;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.GuildChannel;
+import net.dv8tion.jda.api.entities.GuildMessageChannel;
 import net.dv8tion.jda.api.entities.IMentionable;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.MessageChannel;
+import net.dv8tion.jda.api.entities.NewsChannel;
 import net.dv8tion.jda.api.entities.Role;
+import net.dv8tion.jda.api.entities.StageChannel;
+import net.dv8tion.jda.api.entities.TextChannel;
+import net.dv8tion.jda.api.entities.ThreadChannel;
 import net.dv8tion.jda.api.entities.User;
+import net.dv8tion.jda.api.entities.UserSnowflake;
+import net.dv8tion.jda.api.entities.VoiceChannel;
 import net.dv8tion.jda.api.interactions.commands.Command;
 import net.dv8tion.jda.api.interactions.commands.Command.Choice;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
-import net.dv8tion.jda.api.interactions.commands.privileges.CommandPrivilege;
-import net.dv8tion.jda.api.interactions.commands.privileges.CommandPrivilege.Type;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -40,6 +46,7 @@ import java.util.stream.Collectors;
 
 import static gg.projecteden.api.common.utils.Nullables.isNullOrEmpty;
 
+@SuppressWarnings("unused")
 public record AppCommandRegistry(JDA jda, String packageName) {
 	static final Map<String, AppCommandMeta<?>> COMMANDS = new HashMap<>();
 	static final Map<Class<?>, Function<OptionMapping, Object>> OPTION_CONVERTERS = new HashMap<>();
@@ -51,7 +58,7 @@ public record AppCommandRegistry(JDA jda, String packageName) {
 
 	static AppCommandHandler handler;
 
-	private static final boolean debug = false;
+	private static final boolean debug = true;
 
 	private static void debug(String message) {
 		if (debug)
@@ -120,6 +127,7 @@ public record AppCommandRegistry(JDA jda, String packageName) {
 				}
 			}
 
+			/*
 			Consumer<Command> setPrivilege = response -> {
 				if (!meta.requiresRole())
 					return;
@@ -141,6 +149,7 @@ public record AppCommandRegistry(JDA jda, String packageName) {
 					return null;
 				});
 			};
+			 */
 
 			guild.upsertCommand(command).submit().thenAccept(response -> {
 				success.accept("COMMAND");
@@ -262,7 +271,7 @@ public record AppCommandRegistry(JDA jda, String packageName) {
 		@NonNull
 		private AppCommand command;
 		@NonNull
-		private AppCommandMeta.AppCommandMethod.AppCommandArgument meta;
+		private AppCommandMeta<?>.AppCommandMethod.AppCommandArgument meta;
 
 	}
 
@@ -318,18 +327,49 @@ public record AppCommandRegistry(JDA jda, String packageName) {
 		registerOptionConverter(Member.class, OptionMapping::getAsMember);
 		registerOptionConverter(User.class, OptionMapping::getAsUser);
 		registerOptionConverter(Role.class, OptionMapping::getAsRole);
-		registerOptionConverter(GuildChannel.class, OptionMapping::getAsGuildChannel);
-		registerOptionConverter(MessageChannel.class, OptionMapping::getAsMessageChannel);
+		registerOptionConverter(GuildMessageChannel.class, argument -> argument.getAsChannel().asGuildMessageChannel());
+		registerOptionConverter(TextChannel.class, argument -> argument.getAsChannel().asTextChannel());
+		registerOptionConverter(NewsChannel.class, argument -> argument.getAsChannel().asNewsChannel());
+		registerOptionConverter(ThreadChannel.class, argument -> argument.getAsChannel().asThreadChannel());
+		registerOptionConverter(AudioChannel.class, argument -> argument.getAsChannel().asAudioChannel());
+		registerOptionConverter(VoiceChannel.class, argument -> argument.getAsChannel().asVoiceChannel());
+		registerOptionConverter(StageChannel.class, argument -> argument.getAsChannel().asStageChannel());
 		registerOptionConverter(IMentionable.class, OptionMapping::getAsMentionable);
 
 		registerConverter(String.class, AppCommandArgumentInstance::getInput);
-
 		registerConverter(Enum.class, argument -> {
 			final String input = argument.getInput();
 			final Class<?> type = argument.getMeta().getType();
 
 			return convertToEnum((Class<? extends Enum<?>>) type, input);
 		});
+
+		registerConverter(String.class, argument -> AppCommandHandler.parseMentions(argument.getInput()));
+
+		final List<String> BOOLEAN_TRUE_VALUES = List.of("enable", "on", "yes", "1");
+		registerConverter(List.of(Boolean.class, Boolean.TYPE), argument -> {
+			if (BOOLEAN_TRUE_VALUES.contains(argument.getInput().toLowerCase()))
+				return true;
+
+			return Boolean.parseBoolean(argument.getInput());
+		});
+
+		registerConverter(List.of(Long.class, Long.TYPE), argument -> Long.valueOf(argument.getInput()));
+		registerConverter(List.of(Integer.class, Integer.TYPE), argument -> Integer.valueOf(argument.getInput()));
+		registerConverter(List.of(Short.class, Short.TYPE), argument -> Short.valueOf(argument.getInput()));
+		registerConverter(List.of(Byte.class, Byte.TYPE), argument -> Byte.valueOf(argument.getInput()));
+		registerConverter(List.of(Double.class, Double.TYPE), argument -> Double.valueOf(argument.getInput()));
+		registerConverter(List.of(Float.class, Float.TYPE), argument -> Float.valueOf(argument.getInput()));
+
+		registerConverter(Member.class, argument -> argument.getCommand().guild().getMember(UserSnowflake.fromId(argument.getInput())));
+		registerConverter(User.class, argument -> argument.getCommand().guild().getMember(UserSnowflake.fromId(argument.getInput())).getUser());
+		registerConverter(Role.class, argument -> argument.getCommand().guild().getRoleById(argument.getInput()));
+		registerConverter(GuildMessageChannel.class, argument -> argument.getCommand().guild().getGuildChannelById(argument.getInput()));
+		registerConverter(TextChannel.class, argument -> argument.getCommand().guild().getTextChannelById(argument.getInput()));
+		registerConverter(NewsChannel.class, argument -> argument.getCommand().guild().getNewsChannelById(argument.getInput()));
+		registerConverter(ThreadChannel.class, argument -> argument.getCommand().guild().getThreadChannelById(argument.getInput()));
+		registerConverter(VoiceChannel.class, argument -> argument.getCommand().guild().getVoiceChannelById(argument.getInput()));
+		registerConverter(StageChannel.class, argument -> argument.getCommand().guild().getStageChannelById(argument.getInput()));
 	}
 
 	@Nullable

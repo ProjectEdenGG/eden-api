@@ -5,7 +5,6 @@ import gg.projecteden.api.common.utils.ReflectionUtils;
 import gg.projecteden.api.discord.appcommands.AppCommandRegistry.AppCommandArgumentInstance;
 import gg.projecteden.api.discord.appcommands.annotations.Choices;
 import gg.projecteden.api.discord.appcommands.annotations.Command;
-import gg.projecteden.api.discord.appcommands.annotations.Default;
 import gg.projecteden.api.discord.appcommands.annotations.Desc;
 import gg.projecteden.api.discord.appcommands.annotations.GuildCommand;
 import gg.projecteden.api.discord.appcommands.annotations.Optional;
@@ -24,6 +23,7 @@ import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData;
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandGroupData;
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -59,8 +59,8 @@ public class AppCommandMeta<C extends AppCommand> {
 		this.clazz = clazz;
 		this.role = defaultRole(getAnnotation(clazz, RequiredRole.class));
 		this.command = Commands.slash(name, requireDescription(clazz));
-		if (!isNullOrEmpty(role))
-			this.command.setDefaultEnabled(false);
+//		if (!isNullOrEmpty(role))
+//			this.command.setDefaultPermissions(DefaultMemberPermissions.enabledFor(Permission.EMPTY_PERMISSIONS));
 
 		GuildCommand guildAnnotation = getAnnotation(clazz, GuildCommand.class);
 		if (guildAnnotation == null) {
@@ -193,7 +193,6 @@ public class AppCommandMeta<C extends AppCommand> {
 			private final OptionType optionType;
 
 			public AppCommandArgument(Parameter parameter) {
-				final Default defaultAnnotation = parameter.getAnnotation(Default.class);
 				final Choices choicesAnnotation = parameter.getAnnotation(Choices.class);
 				final Optional optionalAnnotation = parameter.getAnnotation(Optional.class);
 				final RequiredRole roleAnnotation = parameter.getAnnotation(RequiredRole.class);
@@ -201,11 +200,11 @@ public class AppCommandMeta<C extends AppCommand> {
 				this.parameter = parameter;
 				this.name = parameter.getName();
 				this.description = defaultDescription(parameter);
-				this.defaultValue = defaultValue(defaultAnnotation);
+				this.defaultValue = defaultValue(optionalAnnotation);
 				this.role = defaultRole(roleAnnotation);
 				this.type = parameter.getType();
 				this.choices = choicesAnnotation == null ? type : choicesAnnotation.value();
-				this.required = optionalAnnotation == null && isNullOrEmpty(defaultValue);
+				this.required = optionalAnnotation == null;
 				this.optionType = AppCommandRegistry.resolveOptionType(this.type);
 			}
 
@@ -234,33 +233,25 @@ public class AppCommandMeta<C extends AppCommand> {
 						.orElse(null);
 			}
 
-			public Object tryConvert(C command, OptionMapping option) {
+			public Object tryConvert(C command, OptionMapping argument) {
 				try {
 					checkRole(command.member(), role);
 				} catch (AppCommandException ex) {
 					if (required && isNullOrEmpty(defaultValue))
 						throw ex;
 					else
-						option = null;
+						argument = null;
 				}
 
-				if (required && option == null)
+				if (required && argument == null)
 					throw new AppCommandException(name + " is required");
 
 				Object object;
 
-				if (option == null) {
-					object = convert(command, defaultValue);
-				} else if (AppCommandRegistry.OPTION_CONVERTERS.containsKey(type)) {
-					object = AppCommandRegistry.OPTION_CONVERTERS.get(type).apply(option);
-				} else {
-					String string = (String) AppCommandRegistry.OPTION_CONVERTERS.get(String.class).apply(option);
-
-					if (isNullOrEmpty(string))
-						string = defaultValue;
-
-					object = convert(command, string);
-				}
+				if (argument != null && AppCommandRegistry.OPTION_CONVERTERS.containsKey(type))
+					object = AppCommandRegistry.OPTION_CONVERTERS.get(type).apply(argument);
+				else
+					object = convert(command, argument);
 
 				if (required && object == null)
 					throw new AppCommandException(name + " is required");
@@ -268,13 +259,24 @@ public class AppCommandMeta<C extends AppCommand> {
 				return object;
 			}
 
-			public Object convert(C command, String string) {
+			public Object convert(C command, OptionMapping argument) {
+				String string = null;
+				if (argument != null) {
+					string = (String) AppCommandRegistry.OPTION_CONVERTERS.get(String.class).apply(argument);
+
+					if (isNullOrEmpty(string))
+						string = defaultValue;
+				}
+
 				final String input = string == null && !isNullOrEmpty(defaultValue) ? defaultValue : string;
 				final Supplier<AppCommandArgumentInstance> argumentInstance = () -> new AppCommandArgumentInstance(input, command, this);
 
+				if (argument != null && AppCommandRegistry.OPTION_CONVERTERS.containsKey(type))
+					return AppCommandRegistry.OPTION_CONVERTERS.get(type).apply(argument);
+
 				var converter = AppCommandRegistry.getConverter(type);
 				if (converter == null)
-					throw new AppCommandMisconfiguredException("No converter for " + type.getSimpleName() + " registered");
+					throw new AppCommandMisconfiguredException("No converter for " + type.getSimpleName() + " registered 2");
 
 				return converter.apply(argumentInstance.get());
 			}
@@ -349,7 +351,9 @@ public class AppCommandMeta<C extends AppCommand> {
 		return annotation == null ? null : annotation.value();
 	}
 
-	private static String defaultValue(Default annotation) {
+	@Nullable
+	@Contract("null -> null; !null -> _")
+	private static String defaultValue(Optional annotation) {
 		return annotation == null ? null : annotation.value();
 	}
 
