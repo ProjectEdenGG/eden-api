@@ -58,7 +58,7 @@ public record AppCommandRegistry(JDA jda, String packageName) {
 
 	static AppCommandHandler handler;
 
-	private static final boolean debug = true;
+	private static final boolean debug = false;
 
 	private static void debug(String message) {
 		if (debug)
