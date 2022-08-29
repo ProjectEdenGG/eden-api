@@ -231,7 +231,7 @@ public abstract class MongoService<T extends DatabaseObject> {
 
 	private void checkType(T object) {
 		if (getObjectClass() == null) return;
-		if (!object.getClass().isAssignableFrom(getObjectClass()))
+		if (!getObjectClass().isAssignableFrom(object.getClass()))
 			throw new EdenException(this.getClass().getSimpleName() + " received wrong class type, expected "
 					+ getObjectClass().getSimpleName() + ", found " + object.getClass().getSimpleName());
 	}
