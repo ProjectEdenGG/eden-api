@@ -133,7 +133,10 @@ public class AppCommandMeta<C extends AppCommand> {
 		}
 
 		public static AppCommandMeta<?>.AppCommandMethod of(SlashCommandInteractionEvent event) {
-			return AppCommandRegistry.COMMANDS.get(event.getName()).getMethod(event.getCommandPath());
+			if(AppCommandRegistry.COMMANDS.containsKey(event.getName()))
+				return AppCommandRegistry.COMMANDS.get(event.getName()).getMethod(event.getCommandPath());
+
+			return null;
 		}
 
 		@SneakyThrows

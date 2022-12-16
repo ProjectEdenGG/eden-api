@@ -15,7 +15,10 @@ public class AppCommandHandler extends ListenerAdapter {
 	@Override
 	public void onSlashCommandInteraction(@NotNull SlashCommandInteractionEvent event) {
 		try {
-			AppCommandMethod.of(event).handle(event);
+			AppCommandMeta<?>.AppCommandMethod method = AppCommandMethod.of(event);
+			if(method != null)
+				method.handle(event);
+
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}
