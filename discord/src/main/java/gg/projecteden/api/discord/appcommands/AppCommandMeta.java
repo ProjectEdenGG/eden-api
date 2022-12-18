@@ -31,6 +31,7 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -52,6 +53,7 @@ public class AppCommandMeta<C extends AppCommand> {
 	private final List<String> includedGuilds;
 	private final List<String> excludedGuilds;
 	private final SlashCommandData command;
+	private final List<SubcommandGroupData> groups = new ArrayList<>();
 	private final Map<String, AppCommandMethod> methods;
 
 	public AppCommandMeta(Class<C> clazz) {
@@ -90,6 +92,8 @@ public class AppCommandMeta<C extends AppCommand> {
 				put(name + methodMeta.getPath(), methodMeta);
 			});
 		}};
+
+		command.addSubcommandGroups(groups);
 	}
 
 	private void init() {
@@ -292,6 +296,7 @@ public class AppCommandMeta<C extends AppCommand> {
 					case 0 -> command.addOptions(options);
 					case 1 -> command.addSubcommands(asSubcommand(0));
 					case 2 -> getGroup().addSubcommands(asSubcommand(1));
+					default -> throw new AppCommandMisconfiguredException("Cannot have more than 2 literal arguments");
 				}
 			} catch (Exception ex) {
 				ex.printStackTrace();
@@ -300,12 +305,12 @@ public class AppCommandMeta<C extends AppCommand> {
 
 		@NotNull
 		private SubcommandGroupData getGroup() {
-			return command.getSubcommandGroups().stream()
+			return groups.stream()
 					.filter(group -> group.getName().equals(literals[0]))
 					.findFirst()
 					.orElseGet(() -> {
 						final SubcommandGroupData group = new SubcommandGroupData(literals[0], description);
-						command.addSubcommandGroups(group);
+						groups.add(group);
 						return group;
 					});
 		}

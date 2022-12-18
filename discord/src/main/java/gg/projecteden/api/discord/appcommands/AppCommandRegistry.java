@@ -6,8 +6,12 @@ import gg.projecteden.api.common.utils.Utils;
 import gg.projecteden.api.discord.appcommands.exceptions.AppCommandException;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.Getter;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 import lombok.SneakyThrows;
+import lombok.experimental.Accessors;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.AudioChannel;
 import net.dv8tion.jda.api.entities.Guild;
@@ -46,8 +50,10 @@ import java.util.stream.Collectors;
 
 import static gg.projecteden.api.common.utils.Nullables.isNullOrEmpty;
 
+@AllArgsConstructor
+@RequiredArgsConstructor
 @SuppressWarnings("unused")
-public record AppCommandRegistry(JDA jda, String packageName) {
+public class AppCommandRegistry {
 	static final Map<String, AppCommandMeta<?>> COMMANDS = new HashMap<>();
 	static final Map<Class<?>, Function<OptionMapping, Object>> OPTION_CONVERTERS = new HashMap<>();
 	static final Map<Class<?>, Function<AppCommandArgumentInstance, Object>> CONVERTERS = new HashMap<>();
@@ -58,9 +64,15 @@ public record AppCommandRegistry(JDA jda, String packageName) {
 
 	static AppCommandHandler handler;
 
-	private static final boolean debug = false;
+	private final JDA jda;
+	private final String packageName;
 
-	private static void debug(String message) {
+	@Getter
+	@Setter
+	@Accessors(chain = true)
+	private boolean debug = false;
+
+	private void debug(String message) {
 		if (debug)
 			System.out.println(message);
 	}
