@@ -51,8 +51,11 @@ public final class DiscordId {
 
 		private final long idLong;
 
-		public net.dv8tion.jda.api.entities.TextChannel get(JDA jda) {
-			return Guild.PROJECT_EDEN.get(jda).getTextChannelById(idLong);
+		public net.dv8tion.jda.api.entities.StandardGuildMessageChannel get(JDA jda) {
+			if (this == ANNOUNCEMENTS)
+				return Guild.PROJECT_EDEN.get(jda).getNewsChannelById(idLong);
+			else
+				return Guild.PROJECT_EDEN.get(jda).getTextChannelById(idLong);
 		}
 
 		public static TextChannel of(net.dv8tion.jda.api.entities.TextChannel textChannel) {
