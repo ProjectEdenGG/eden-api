@@ -17,6 +17,8 @@ public class DatabaseConfig {
 	private String password = "password";
 	private String prefix;
 	private String modelPath;
+	@Builder.Default
+	private boolean caching = true;
 
 	public static class DatabaseConfigBuilder {
 

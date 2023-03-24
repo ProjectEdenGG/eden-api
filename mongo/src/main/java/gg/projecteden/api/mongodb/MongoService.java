@@ -185,10 +185,16 @@ public abstract class MongoService<T extends DatabaseObject> {
 
 	@NotNull
 	public T get(UUID uuid) {
-//		if (isEnableCache())
-		return getCache(uuid);
-//		else
-//			return getNoCache(uuid);
+		if (isEnableCache())
+			return getCache(uuid);
+		else
+			return getNoCache(uuid);
+	}
+
+	public boolean isEnableCache() {
+		return EdenAPI.getAs(EdenDatabaseAPI.class)
+				.map(api -> api.getDatabaseConfig().isCaching())
+				.orElse(true);
 	}
 
 	public T get0() {
