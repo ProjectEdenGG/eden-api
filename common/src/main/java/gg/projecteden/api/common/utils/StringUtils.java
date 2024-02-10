@@ -89,6 +89,9 @@ public class StringUtils {
 		if (!separator.contains(", "))
 			throw new EdenException("Separator must contain ', '");
 
+		if (items.size() == 1)
+			return items.get(0);
+
 		String message = String.join(separator, items);
 		int commaIndex = message.lastIndexOf(", ");
 		message = new StringBuilder(message).replace(commaIndex, commaIndex + 2, (items.size() > 2 ? "," : "") + " and ").toString();
