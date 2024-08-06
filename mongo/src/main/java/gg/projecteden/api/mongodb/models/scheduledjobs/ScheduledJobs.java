@@ -10,12 +10,15 @@ import gg.projecteden.api.mongodb.models.scheduledjobs.common.AbstractJob.JobSta
 import gg.projecteden.api.mongodb.serializers.JobConverter;
 import gg.projecteden.api.mongodb.serializers.LocalDateTimeConverter;
 import gg.projecteden.api.mongodb.serializers.UUIDConverter;
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 
 import java.time.LocalDateTime;
 import java.util.Collection;
@@ -37,8 +40,12 @@ public class ScheduledJobs implements PlayerOwnedObject {
 	@Id
 	@NonNull
 	private UUID uuid;
-	private Map<JobStatus, Set<AbstractJob>> jobs = new ConcurrentHashMap<>();
 	private Set<AbstractJob> scheduledJobs = ConcurrentHashMap.newKeySet();
+
+	@Deprecated
+	@Getter(AccessLevel.PRIVATE)
+	@Setter(AccessLevel.PRIVATE)
+	private Map<JobStatus, Set<AbstractJob>> jobs = new ConcurrentHashMap<>();
 
 	@PostLoad
 	void fix() {
