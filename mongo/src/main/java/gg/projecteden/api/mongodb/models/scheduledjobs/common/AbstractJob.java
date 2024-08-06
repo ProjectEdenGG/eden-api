@@ -42,6 +42,7 @@ public abstract class AbstractJob {
 	protected LocalDateTime completed;
 	@NonNull
 	protected JobStatus status = JobStatus.PENDING;
+	protected int attempts = 0;
 
 	public AbstractJob() {
 		this.id = UUID.randomUUID();
@@ -54,12 +55,6 @@ public abstract class AbstractJob {
 
 	@Getter
 	private static Set<Class<? extends AbstractJob>> subclasses = subTypesOf(AbstractJob.class, "gg.projecteden");
-
-	public void setStatus(JobStatus status) {
-		jobs().get(this.status).remove(this);
-		this.status = status;
-		jobs().get(this.status).add(this);
-	}
 
 	public void schedule(int seconds) {
 		schedule(LocalDateTime.now().plusSeconds(seconds));
@@ -76,21 +71,25 @@ public abstract class AbstractJob {
 
 	public void process() {
 		if (status != JobStatus.PENDING)
-			throw new EdenException(getClass().getSimpleName() + " # " + id + " is already " + camelCase(status));
+			throw new EdenException("Tried to process job " + getClass().getSimpleName() + " # " + id + ", but it is already " + camelCase(status));
 
 		try {
 			setStatus(JobStatus.RUNNING);
 
-			final Runnable runnable = () -> run().thenAccept(status -> {
-				setStatus(status);
-				completed = LocalDateTime.now();
-			});
+			final Runnable runnable = () -> run()
+				.thenAccept(status -> {
+					setStatus(status);
+					completed = LocalDateTime.now();
+				}).exceptionally(ex -> {
+					setStatus(JobStatus.ERRORED);
+					completed = LocalDateTime.now();
+					return null;
+				});
 
 			if (getClass().getAnnotation(Async.class) != null)
 				runnable.run();
 			else
 				EdenAPI.get().sync(runnable);
-
 		} catch (Exception ex) {
 			Log.severe("Error while running " + getClass().getSimpleName() + " # " + id);
 			ex.printStackTrace();
@@ -112,7 +111,22 @@ public abstract class AbstractJob {
 	protected abstract CompletableFuture<JobStatus> run();
 
 	public boolean canRetry() {
-		return getClass().getAnnotation(RetryIfInterrupted.class) != null;
+		if (status == JobStatus.RUNNING) {
+			final RetryIfInterrupted annotation = getClass().getAnnotation(RetryIfInterrupted.class);
+			return annotation != null && attempts < annotation.value();
+		}
+
+		if (status == JobStatus.ERRORED) {
+			final RetryIfErrored annotation = getClass().getAnnotation(RetryIfErrored.class);
+			return annotation != null && attempts < annotation.value();
+		}
+
+		return false;
+	}
+
+	public void attempt() {
+		++attempts;
+		status = JobStatus.PENDING;
 	}
 
 	public enum JobStatus {
@@ -147,10 +161,7 @@ public abstract class AbstractJob {
 
 		final ExecutionTime executionTime = ExecutionTime.forCron(parser.parse(schedule.value()));
 		final Optional<ZonedDateTime> next = executionTime.nextExecution(ZonedDateTime.now());
-		if (next.isEmpty())
-			return null;
-
-		return next.get().toLocalDateTime();
+		return next.map(ZonedDateTime::toLocalDateTime).orElse(null);
 	}
 
 }

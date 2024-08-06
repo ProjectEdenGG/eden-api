@@ -8,12 +8,13 @@ import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class Tasks {
 	private static final AtomicInteger nextTaskId = new AtomicInteger(1);
-	private static final Map<Integer, Future<?>> tasks = new HashMap<>();
+	private static final Map<Integer, ScheduledFuture<?>> tasks = new HashMap<>();
 
 	public static int wait(MillisTime delay, Runnable runnable) {
 		return wait(delay.get(), runnable);
@@ -44,7 +45,7 @@ public class Tasks {
 		return Executors.newScheduledThreadPool(1);
 	}
 
-	private static <F extends Future<?>> int run(F future) {
+	private static <F extends ScheduledFuture<?>> int run(F future) {
 		final int taskId = nextTaskId.getAndIncrement();
 		tasks.put(taskId, future);
 		return taskId;

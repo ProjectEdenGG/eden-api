@@ -7,6 +7,6 @@ import java.lang.annotation.Target;
 
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface RetryIfInterrupted {
+public @interface RetryIfErrored {
 	int value() default 3;
 }

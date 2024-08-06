@@ -3,6 +3,7 @@ package gg.projecteden.api.mongodb.models.scheduledjobs;
 import dev.morphia.annotations.Converters;
 import dev.morphia.annotations.Entity;
 import dev.morphia.annotations.Id;
+import dev.morphia.annotations.PostLoad;
 import gg.projecteden.api.mongodb.interfaces.PlayerOwnedObject;
 import gg.projecteden.api.mongodb.models.scheduledjobs.common.AbstractJob;
 import gg.projecteden.api.mongodb.models.scheduledjobs.common.AbstractJob.JobStatus;
@@ -17,7 +18,8 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
 import java.time.LocalDateTime;
-import java.util.HashSet;
+import java.util.Collection;
+import java.util.ConcurrentModificationException;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -36,9 +38,20 @@ public class ScheduledJobs implements PlayerOwnedObject {
 	@NonNull
 	private UUID uuid;
 	private Map<JobStatus, Set<AbstractJob>> jobs = new ConcurrentHashMap<>();
+	private Set<AbstractJob> scheduledJobs = ConcurrentHashMap.newKeySet();
+
+	@PostLoad
+	void fix() {
+		scheduledJobs.addAll(jobs.values()
+			.stream()
+			.flatMap(Collection::stream)
+			.collect(Collectors.toSet()));
+	}
 
 	public Set<AbstractJob> get(JobStatus status) {
-		return jobs.computeIfAbsent(status, $ -> new HashSet<>());
+		return scheduledJobs.stream()
+			.filter(job -> job.getStatus() == status)
+			.collect(Collectors.toSet());
 	}
 
 	public Set<AbstractJob> getReady() {
@@ -56,16 +69,14 @@ public class ScheduledJobs implements PlayerOwnedObject {
 	}
 
 	public void add(AbstractJob job) {
-		add(JobStatus.PENDING, job);
-	}
-
-	public void add(JobStatus status, AbstractJob job) {
-		get(status).add(job);
+		scheduledJobs.add(job);
 	}
 
 	public void janitor() {
-		final LocalDateTime threshold = LocalDateTime.now().minusDays(3);
-		get(JobStatus.COMPLETED).removeIf(job -> job.getTimestamp().isBefore(threshold));
+		try {
+			final LocalDateTime threshold = LocalDateTime.now().minusDays(5);
+			scheduledJobs.removeIf(job -> job.getStatus() == JobStatus.COMPLETED || job.getTimestamp().isBefore(threshold));
+		} catch (ConcurrentModificationException tryAgainLater) {}
 	}
 
 }
