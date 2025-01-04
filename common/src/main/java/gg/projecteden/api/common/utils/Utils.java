@@ -7,6 +7,7 @@ import io.github.classgraph.AnnotationInfo;
 import io.github.classgraph.ClassInfo;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.Getter;
 import lombok.SneakyThrows;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -115,12 +116,14 @@ public class Utils {
 
 	@AllArgsConstructor
 	public enum ArithmeticOperator {
-		ADD((n1, n2) -> n1.doubleValue() + n2.doubleValue()),
-		SUBTRACT((n1, n2) -> n1.doubleValue() - n2.doubleValue()),
-		MULTIPLY((n1, n2) -> n1.doubleValue() * n2.doubleValue()),
-		DIVIDE((n1, n2) -> n1.doubleValue() / n2.doubleValue()),
-		POWER((n1, n2) -> Math.pow(n1.doubleValue(), n2.doubleValue()));
+		ADD("+", (n1, n2) -> n1.doubleValue() + n2.doubleValue()),
+		SUBTRACT("-", (n1, n2) -> n1.doubleValue() - n2.doubleValue()),
+		MULTIPLY("*", (n1, n2) -> n1.doubleValue() * n2.doubleValue()),
+		DIVIDE("/", (n1, n2) -> n1.doubleValue() / n2.doubleValue()),
+		POWER("^", (n1, n2) -> Math.pow(n1.doubleValue(), n2.doubleValue()));
 
+		@Getter
+		private final String symbol;
 		private final BiFunction<Number, Number, Number> function;
 
 		public Number run(Number number1, Number number2) {
