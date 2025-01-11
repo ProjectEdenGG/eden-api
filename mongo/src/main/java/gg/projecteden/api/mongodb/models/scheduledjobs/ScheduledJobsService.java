@@ -3,6 +3,8 @@ package gg.projecteden.api.mongodb.models.scheduledjobs;
 import gg.projecteden.api.mongodb.MongoPlayerService;
 import gg.projecteden.api.mongodb.annotations.ObjectClass;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -18,6 +20,10 @@ public class ScheduledJobsService extends MongoPlayerService<ScheduledJobs> {
 	@Override
 	protected void beforeSave(ScheduledJobs scheduledJobs) {
 		scheduledJobs.janitor();
+	}
+
+	public List<ScheduledJobs> getAll() {
+		return Collections.singletonList(getApp());
 	}
 
 }
