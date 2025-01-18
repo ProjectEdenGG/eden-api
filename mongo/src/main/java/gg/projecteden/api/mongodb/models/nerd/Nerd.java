@@ -92,6 +92,7 @@ public class Nerd implements PlayerOwnedObject {
 		HE_HIM,
 		XE_XEM,
 		ANY,
+		ASK,
 		;
 
 		@Override
