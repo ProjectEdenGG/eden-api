@@ -8,7 +8,6 @@ import java.util.List;
 public enum Env {
 	DEV,
 	TEST,
-	STAGING,
 	UPDATE,
 	PROD;
 
