@@ -21,6 +21,10 @@ public class LocalDateTimeConverter extends TypeConverter implements SimpleValue
 
 	@Override
 	public Object encode(Object value, MappedField optionalExtraInfo) {
+		return toEncoded(value);
+	}
+
+	public static Object toEncoded(Object value) {
 		if (!(value instanceof LocalDateTime)) return null;
 		return DateTimeFormatter.ISO_LOCAL_DATE_TIME.format((LocalDateTime) value);
 	}
@@ -30,7 +34,7 @@ public class LocalDateTimeConverter extends TypeConverter implements SimpleValue
 		return decode(value);
 	}
 
-	public LocalDateTime decode(Object value) {
+	public static LocalDateTime decode(Object value) {
 		if (!(value instanceof String string)) return null;
 		if (Nullables.isNullOrEmpty(string)) return null;
 
