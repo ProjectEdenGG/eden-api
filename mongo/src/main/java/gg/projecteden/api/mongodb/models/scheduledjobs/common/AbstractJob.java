@@ -69,6 +69,22 @@ public abstract class AbstractJob {
 		new ScheduledJobsService().editApp(jobs -> jobs.add(this));
 	}
 
+	public void scheduleSync(int seconds) {
+		scheduleSync(LocalDateTime.now().plusSeconds(seconds));
+	}
+
+	public void scheduleSync(TemporalAmount duration) { // mostly for java.time.Duration
+		scheduleSync(LocalDateTime.now().plus(duration));
+	}
+
+	public void scheduleSync(LocalDateTime timestamp) {
+		this.timestamp = timestamp;
+		var service = new ScheduledJobsService();
+		var jobs = service.getApp();
+		jobs.add(this);
+		service.saveSync(jobs);
+	}
+
 	public void process() {
 		if (status != JobStatus.PENDING)
 			throw new EdenException("Tried to process job " + getClass().getSimpleName() + " # " + id + ", but it is already " + camelCase(status));
