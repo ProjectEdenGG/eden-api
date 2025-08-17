@@ -5,6 +5,7 @@ import lombok.Getter;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.ISnowflake;
 import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.entities.channel.middleman.StandardGuildMessageChannel;
 
 import java.util.Arrays;
 import java.util.Objects;
@@ -54,14 +55,14 @@ public final class DiscordId {
 
 		private final long idLong;
 
-		public net.dv8tion.jda.api.entities.StandardGuildMessageChannel get(JDA jda) {
+		public StandardGuildMessageChannel get(JDA jda) {
 			if (this == ANNOUNCEMENTS)
 				return Guild.PROJECT_EDEN.get(jda).getNewsChannelById(idLong);
 			else
 				return Guild.PROJECT_EDEN.get(jda).getTextChannelById(idLong);
 		}
 
-		public static TextChannel of(net.dv8tion.jda.api.entities.TextChannel textChannel) {
+		public static TextChannel of(net.dv8tion.jda.api.entities.channel.concrete.TextChannel textChannel) {
 			return of(textChannel.getId());
 		}
 
@@ -112,11 +113,11 @@ public final class DiscordId {
 		private final long idLong;
 		private final String permission;
 
-		public net.dv8tion.jda.api.entities.VoiceChannel get(JDA jda) {
+		public net.dv8tion.jda.api.entities.channel.concrete.VoiceChannel get(JDA jda) {
 			return Guild.PROJECT_EDEN.get(jda).getVoiceChannelById(idLong);
 		}
 
-		public static VoiceChannel of(net.dv8tion.jda.api.entities.VoiceChannel voiceChannel) {
+		public static VoiceChannel of(net.dv8tion.jda.api.entities.channel.concrete.VoiceChannel voiceChannel) {
 			return of(voiceChannel.getId());
 		}
 

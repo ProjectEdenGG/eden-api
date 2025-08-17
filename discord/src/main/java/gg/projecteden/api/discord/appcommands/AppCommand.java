@@ -2,12 +2,12 @@ package gg.projecteden.api.discord.appcommands;
 
 import lombok.RequiredArgsConstructor;
 import net.dv8tion.jda.api.EmbedBuilder;
-import net.dv8tion.jda.api.MessageBuilder;
-import net.dv8tion.jda.api.entities.Category;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
-import net.dv8tion.jda.api.entities.TextChannel;
+import net.dv8tion.jda.api.entities.channel.concrete.Category;
+import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.interactions.InteractionHook;
+import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder;
 
 import java.util.concurrent.CompletableFuture;
 
@@ -47,12 +47,12 @@ public abstract class AppCommand {
 		return event.getEvent().reply(message).submit();
 	}
 
-	public CompletableFuture<InteractionHook> reply(MessageBuilder message) {
+	public CompletableFuture<InteractionHook> reply(MessageCreateBuilder message) {
 		return event.getEvent().reply(message.build()).submit();
 	}
 
 	public CompletableFuture<InteractionHook> reply(EmbedBuilder message) {
-		return event.getEvent().reply(new MessageBuilder().setEmbeds(message.build()).build()).submit();
+		return event.getEvent().reply(new MessageCreateBuilder().setEmbeds(message.build()).build()).submit();
 	}
 
 	public CompletableFuture<InteractionHook> replyEphemeral(String message) {
