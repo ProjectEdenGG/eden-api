@@ -43,8 +43,8 @@ import static gg.projecteden.api.common.utils.ReflectionUtils.subTypesOf;
 import static gg.projecteden.api.common.utils.UUIDUtils.UUID0;
 
 public abstract class MongoService<T extends DatabaseObject> {
-	protected static Datastore database;
-	protected static String _id = "_id";
+	public static Datastore database;
+	public static String _id = "_id";
 
 	@Getter
 	private static final Set<Class<? extends MongoService>> services = subTypesOf(MongoService.class, MongoService.class.getPackageName() + ".models");
