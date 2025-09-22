@@ -321,8 +321,8 @@ public class AppCommandMeta<C extends AppCommand> {
 		}
 
 		public String getPath() {
-			final String path = String.join("/", literals);
-			return isNullOrEmpty(path) ? "" : "/" + path;
+			final String path = String.join(" ", literals);
+			return isNullOrEmpty(path) ? "" : " " + path;
 		}
 
 	}

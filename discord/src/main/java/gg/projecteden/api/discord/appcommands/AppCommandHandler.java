@@ -1,6 +1,7 @@
 package gg.projecteden.api.discord.appcommands;
 
 import gg.projecteden.api.discord.appcommands.AppCommandMeta.AppCommandMethod;
+import net.dv8tion.jda.api.events.interaction.command.GenericCommandInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.jetbrains.annotations.NotNull;
@@ -16,7 +17,7 @@ public class AppCommandHandler extends ListenerAdapter {
 	public void onSlashCommandInteraction(@NotNull SlashCommandInteractionEvent event) {
 		try {
 			AppCommandMeta<?>.AppCommandMethod method = AppCommandMethod.of(event);
-			if(method != null)
+			if (method != null)
 				method.handle(event);
 
 		} catch (Exception ex) {

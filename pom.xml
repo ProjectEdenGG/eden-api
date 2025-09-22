@@ -5,7 +5,7 @@
 
 	<groupId>gg.projecteden</groupId>
 	<artifactId>eden-api</artifactId>
-	<version>2.3.11-SNAPSHOT</version>
+	<version>2.3.12-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
 	<modules>
