@@ -128,5 +128,25 @@ public class EnumUtils {
 		}
 	}
 
+	public interface ComparableEnum {
+		int ordinal();
+
+		default boolean gt(Enum<?> rank) {
+			return ordinal() > rank.ordinal();
+		}
+
+		default boolean gte(Enum<?> rank) {
+			return ordinal() >= rank.ordinal();
+		}
+
+		default boolean lt(Enum<?> rank) {
+			return ordinal() < rank.ordinal();
+		}
+
+		default boolean lte(Enum<?> rank) {
+			return ordinal() <= rank.ordinal();
+		}
+	}
+
 }
 
